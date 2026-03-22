@@ -19,8 +19,38 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
         /* إصلاح التوسيط والدوران */
-        i.fas, i.fa-solid { display: inline-flex !important; align-items: center !important; justify-content: center !important; }
+        i.fas, i.fa-solid { display: inline-flex !important; align-items: center !important; justify-content: center !important; line-height: 1 !important; }
         i.fa-spin { transform-origin: 50% 50% !important; display: inline-block !important; text-align: center; }
+
+        /* كلاسات العرض بملء الشاشة (Landscape) للهواتف */
+        @media screen and (orientation: portrait) {
+            .chart-fullscreen {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vh !important;
+                height: 100vw !important;
+                transform: rotate(90deg) translateY(-100vw) !important;
+                transform-origin: top left !important;
+                z-index: 99999 !important;
+                background: #f8fafc !important;
+                display: flex;
+                flex-direction: column;
+            }
+        }
+        @media screen and (orientation: landscape) {
+            .chart-fullscreen {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                z-index: 99999 !important;
+                background: #f8fafc !important;
+                display: flex;
+                flex-direction: column;
+            }
+        }
     </style>
     
     <!-- React & ReactDOM -->
@@ -108,14 +138,13 @@
         const Compass = createIcon('fas fa-compass fa-fw');
         const Feather = createIcon('fas fa-feather fa-fw');
         const Flame = createIcon('fas fa-fire fa-fw');
-        // أيقونات جديدة للتكبير والتصغير
         const Maximize = createIcon('fas fa-expand fa-fw');
         const Minimize = createIcon('fas fa-compress fa-fw');
         const PlusIcon = createIcon('fas fa-plus fa-fw');
         const MinusIcon = createIcon('fas fa-minus fa-fw');
 
         // ==========================================
-        // 2. إعدادات قواعد البيانات 
+        // 2. إعدادات قواعد البيانات فقط 
         // ==========================================
         const myFirebaseConfig = {
           apiKey: "AIzaSyDDokNKC3OcV2Z_dG-AqPNBd4pQzhxd5jk",
@@ -143,8 +172,12 @@
             super(props);
             this.state = { hasError: false, errorMsg: '' };
           }
-          static getDerivedStateFromError(error) { return { hasError: true, errorMsg: error.toString() }; }
-          componentDidCatch(error, errorInfo) { console.error("App crashed:", error, errorInfo); }
+          static getDerivedStateFromError(error) {
+            return { hasError: true, errorMsg: error.toString() };
+          }
+          componentDidCatch(error, errorInfo) {
+            console.error("App crashed:", error, errorInfo);
+          }
           render() {
             if (this.state.hasError) {
               return (
@@ -161,20 +194,25 @@
         }
 
         // ==========================================
-        // 4. استكشاف الذكاء الاصطناعي التلقائي
+        // 4. استكشاف الذكاء الاصطناعي التلقائي (الذكي)
         // ==========================================
         const getValidGeminiModel = async (apiKey) => {
           if (!apiKey) throw new Error("API_KEY_MISSING");
           if (window.discoveredModelCache) return window.discoveredModelCache;
+
           try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
             const data = await res.json();
+            
             if (data.error) throw new Error(data.error.message);
+
             if (data.models && data.models.length > 0) {
               const validModels = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
               let selected = validModels.find(m => m.name === 'models/gemini-1.5-flash') ||
                              validModels.find(m => m.name.includes("flash")) ||
-                             validModels.find(m => m.name.includes("pro")) || validModels[0];
+                             validModels.find(m => m.name.includes("pro")) ||
+                             validModels[0];
+              
               if (selected) {
                 window.discoveredModelCache = selected.name.replace('models/', '');
                 return window.discoveredModelCache;
@@ -377,27 +415,26 @@ ${recentContext}\n${criteriaPrompt}`;
         // 6. الرسوم البيانية المتطورة ومتحكمات التكبير
         // ==========================================
         const ChartControls = ({ zoomLevel, setZoomLevel, isFullscreen, setIsFullscreen }) => (
-          <div className="flex justify-center items-center gap-4 mt-4 bg-gray-100 p-2 rounded-2xl w-fit mx-auto shadow-inner border border-gray-200">
-             <button onClick={() => setZoomLevel(Math.max(1, zoomLevel - 0.5))} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition" title="تصغير">
+          <div className={`flex justify-center items-center gap-4 bg-gray-100 p-2 rounded-2xl w-fit mx-auto shadow-inner border border-gray-200 ${isFullscreen ? 'm-4' : 'mt-4'}`}>
+             <button onClick={() => setZoomLevel(Math.max(0.1, zoomLevel - 0.2))} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition" title="تصغير">
                <MinusIcon className="text-sm"/>
              </button>
              <button onClick={() => setIsFullscreen(!isFullscreen)} className="px-6 py-2 h-10 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 font-bold text-sm flex items-center gap-2 transition">
                 {isFullscreen ? <Minimize className="text-sm"/> : <Maximize className="text-sm"/>}
-                {isFullscreen ? 'إلغاء ملء الشاشة' : 'ملء الشاشة'}
+                {isFullscreen ? 'إلغاء ملء الشاشة' : 'ملء الشاشة بالعرض'}
              </button>
-             <button onClick={() => setZoomLevel(zoomLevel + 0.5)} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition" title="تكبير">
+             <button onClick={() => setZoomLevel(zoomLevel + 0.2)} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition" title="تكبير">
                <PlusIcon className="text-sm"/>
              </button>
           </div>
         );
 
         const BarChartComponent = ({ data, onBarClick, zoomLevel, isFullscreen }) => {
-          // حساب العرض الديناميكي بناءً على التكبير وعدد العناصر
           const containerWidth = Math.max(100, data.length * 40 * zoomLevel);
           
           return (
-            <div className={`w-full overflow-x-auto scrollbar-hide ${isFullscreen ? 'h-full' : 'h-[300px]'} pt-12`}>
-              <div className="flex items-end justify-between min-w-max gap-3 h-full px-4" style={{ width: `${containerWidth}%` }}>
+            <div className={`w-full overflow-x-auto scrollbar-hide ${isFullscreen ? 'flex-1 pt-6' : 'h-[300px] pt-12'}`}>
+              <div className={`flex items-end justify-between min-w-max gap-3 px-4 ${isFullscreen ? 'h-[90%]' : 'h-full'}`} style={{ width: `${containerWidth}%` }}>
                  {data.map((d, i) => {
                     const score = parseFloat(d.displayScore || 0);
                     const hasData = d.entry || d.entriesCount > 0;
@@ -425,9 +462,13 @@ ${recentContext}\n${criteriaPrompt}`;
           if(validData.length === 0) return <div className="text-center p-10 text-gray-500 bg-white rounded-3xl border border-gray-100 mt-4 w-full">لا توجد بيانات كافية للرسم البياني.</div>;
 
           const padding = 40;
-          // تكبير العرض مع الحفاظ على التمرير الأفقي
           const svgWidth = Math.max(400, totalItems * 50 * zoomLevel);
-          const svgHeight = isFullscreen ? window.innerHeight - 200 : 260;
+          
+          const getFullscreenHeight = () => {
+            if (window.innerHeight > window.innerWidth) return window.innerWidth - 120;
+            return window.innerHeight - 120;
+          };
+          const svgHeight = isFullscreen ? getFullscreenHeight() : 260;
           const usableHeight = svgHeight - padding * 2;
 
           const points = validData.map(d => {
@@ -441,7 +482,7 @@ ${recentContext}\n${criteriaPrompt}`;
           const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
           return (
-            <div className="w-full overflow-x-auto scrollbar-hide">
+            <div className={`w-full overflow-x-auto scrollbar-hide ${isFullscreen ? 'flex-1 flex items-center' : ''}`}>
               <svg width={svgWidth} height={svgHeight} className="overflow-visible min-w-full">
                  {[0, 2.5, 5, 7.5, 10].map(val => (
                    <g key={val}>
@@ -753,7 +794,6 @@ ${recentContext}\n${criteriaPrompt}`;
 
               <div className="px-5 mt-6 flex flex-col gap-6 relative z-10">
                 <div className="grid grid-cols-2 gap-3">
-                  {/* ألوان زاهية وواضحة لأزرار التقويم */}
                   <button onClick={goToCalendar} className="bg-blue-100 p-4 rounded-2xl shadow-sm border border-blue-200 flex flex-col items-center gap-2 hover:bg-blue-200 active:scale-95 transition">
                     <CalendarDays className="text-3xl text-blue-600" /><span className="font-bold text-blue-900 text-sm">التقويم الشهري</span>
                   </button>
@@ -809,7 +849,7 @@ ${recentContext}\n${criteriaPrompt}`;
           const [calendarMode, setCalendarMode] = useState('grid');
           const [sortOption, setSortOption] = useState('date_desc');
           const [chartMetric, setChartMetric] = useState('average');
-          const [zoomLevel, setZoomLevel] = useState(1);
+          const [zoomLevel, setZoomLevel] = useState(0.3); // Zoom مصغر افتراضياً ليظهر الجميع
           const [isFullscreen, setIsFullscreen] = useState(false);
           
           const year = currentMonth.getFullYear();
@@ -849,17 +889,19 @@ ${recentContext}\n${criteriaPrompt}`;
             <div className={`flex-1 overflow-y-auto relative pb-10 ${isFullscreen ? 'bg-slate-900 fixed inset-0 z-[100] flex flex-col p-4' : 'bg-slate-50'}`}>
               {!isFullscreen && (
                 <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
-                  <div className="flex justify-center mb-4">
-                    <button onClick={goToDashboard} className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl transition font-bold text-sm shadow-md">
-                      <Home className="text-sm" /> الرئيسية
-                    </button>
-                  </div>
                   <div className="flex justify-between items-center mb-4">
                     <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="text-lg" /></button>
                     <h1 className="text-xl font-extrabold text-gray-800">{monthNames[month]} {year}</h1>
                     <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="text-lg" /></button>
                   </div>
-                  <div className="text-center"><p className="text-gray-400 text-xs font-bold uppercase">اللقب</p><h2 className="text-lg font-bold text-gray-800 truncate">{mTitle}</h2></div>
+                  <div className="text-center">
+                    <p className="text-gray-400 text-xs font-bold uppercase">اللقب</p>
+                    <h2 className="text-lg font-bold text-gray-800 truncate">{mTitle}</h2>
+                  </div>
+                  {/* زر الرئيسية الجديد تحت اللقب وممتد بالكامل */}
+                  <button onClick={goToDashboard} className="mt-5 w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl transition font-bold text-sm shadow-md">
+                    <Home className="text-sm" /> الرئيسية
+                  </button>
                 </header>
               )}
 
@@ -925,17 +967,13 @@ ${recentContext}\n${criteriaPrompt}`;
 
                 {/* حاوية الرسوم البيانية المتطورة */}
                 {(calendarMode === 'bar' || calendarMode === 'line') && (
-                  <div className={`w-full flex-1 flex flex-col bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isFullscreen ? 'h-full' : ''}`}>
+                  <div className={isFullscreen ? 'chart-fullscreen p-4' : 'w-full flex flex-col bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mt-4'}>
                     <div className="w-full flex-1 overflow-x-auto scrollbar-hide flex items-center">
                        {calendarMode === 'bar' && <BarChartComponent data={chartData} onBarClick={(d) => goToDetails(d.date)} zoomLevel={zoomLevel} isFullscreen={isFullscreen} />}
                        {calendarMode === 'line' && <LineChartComponent data={chartData} totalItems={daysInMonth} onPointClick={(d) => goToDetails(d.date)} zoomLevel={zoomLevel} isFullscreen={isFullscreen} />}
                     </div>
+                    <ChartControls zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} isFullscreen={isFullscreen} setIsFullscreen={setIsFullscreen} />
                   </div>
-                )}
-
-                {/* أزرار التحكم بالرسم البياني */}
-                {(calendarMode === 'bar' || calendarMode === 'line') && (
-                   <ChartControls zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} isFullscreen={isFullscreen} setIsFullscreen={setIsFullscreen} />
                 )}
               </div>
             </div>
@@ -946,7 +984,7 @@ ${recentContext}\n${criteriaPrompt}`;
           const [viewMode, setViewMode] = useState('grid');
           const [yearSortOption, setYearSortOption] = useState('month_desc');
           const [chartMetric, setChartMetric] = useState('average');
-          const [zoomLevel, setZoomLevel] = useState(1);
+          const [zoomLevel, setZoomLevel] = useState(0.8); // Zoom مصغر افتراضياً
           const [isFullscreen, setIsFullscreen] = useState(false);
           
           const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
@@ -997,16 +1035,15 @@ ${recentContext}\n${criteriaPrompt}`;
             <div className={`flex-1 overflow-y-auto relative pb-10 ${isFullscreen ? 'bg-slate-900 fixed inset-0 z-[100] flex flex-col p-4' : 'bg-slate-50'}`}>
                {!isFullscreen && (
                  <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
-                  <div className="flex justify-center mb-4">
-                    <button onClick={goToDashboard} className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl transition font-bold text-sm shadow-md">
-                      <Home className="text-sm" /> الرئيسية
-                    </button>
-                  </div>
                   <div className="flex justify-between items-center mb-4">
                     <button onClick={() => setCurrentYear(currentYear - 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="text-lg" /></button>
                     <h1 className="text-xl font-extrabold text-gray-800">سنة {currentYear}</h1>
                     <button onClick={() => setCurrentYear(currentYear + 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="text-lg" /></button>
                   </div>
+                  {/* زر الرئيسية الجديد تحت السنة وممتد بالكامل */}
+                  <button onClick={goToDashboard} className="mt-2 w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white hover:bg-blue-700 rounded-xl transition font-bold text-sm shadow-md">
+                    <Home className="text-sm" /> الرئيسية
+                  </button>
                 </header>
                )}
 
@@ -1056,7 +1093,7 @@ ${recentContext}\n${criteriaPrompt}`;
                             <div className="text-xs text-gray-500">{m.entriesCount} أيام مسجلة</div>
                           </div>
                         </div>
-                        {m.entriesCount > 0 && <div className="text-lg font-black bg-gray-50 px-3 py-1 rounded-lg text-gray-700 ml-2">{m.avg}</div>}
+                        {m.entriesCount > 0 && <div className="text-lg font-black bg-white/50 px-3 py-1 rounded-lg text-gray-700 ml-2">{m.avg}</div>}
                       </button>
                     ))}
                   </div>
@@ -1064,18 +1101,15 @@ ${recentContext}\n${criteriaPrompt}`;
 
                 {/* حاوية الرسوم البيانية المتطورة */}
                 {(viewMode === 'bar' || viewMode === 'line') && (
-                  <div className={`w-full flex-1 flex flex-col bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isFullscreen ? 'h-full' : ''}`}>
+                  <div className={isFullscreen ? 'chart-fullscreen p-4' : 'w-full flex flex-col bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mt-4'}>
                     <div className="w-full flex-1 overflow-x-auto scrollbar-hide flex items-center">
                        {viewMode === 'bar' && <BarChartComponent data={chartData} onBarClick={(m) => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} zoomLevel={zoomLevel} isFullscreen={isFullscreen} />}
                        {viewMode === 'line' && <LineChartComponent data={chartData} totalItems={12} onPointClick={(m) => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} zoomLevel={zoomLevel} isFullscreen={isFullscreen} />}
                     </div>
+                    <ChartControls zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} isFullscreen={isFullscreen} setIsFullscreen={setIsFullscreen} />
                   </div>
                 )}
 
-                {/* أزرار التحكم بالرسم البياني */}
-                {(viewMode === 'bar' || viewMode === 'line') && (
-                   <ChartControls zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} isFullscreen={isFullscreen} setIsFullscreen={setIsFullscreen} />
-                )}
               </div>
             </div>
           );
@@ -1521,7 +1555,7 @@ ${recentContext}\n${criteriaPrompt}`;
         };
 
         // ==========================================
-        // 8. المكون الرئيسي والتطبيق
+        // 8. المكون الرئيسي والتطبيق (مع نظام المفتاح المنبثق)
         // ==========================================
         function MainApp({ user }) {
           const [entries, setEntries] = useState({});
@@ -1607,7 +1641,6 @@ ${recentContext}\n${criteriaPrompt}`;
 
             localStorage.setItem('geminiApiKey', keyToSave);
             
-            // تحديث الواجهة فوراً لكي تختفي التنبيهات
             setGlobalApiKey(keyToSave);
             setShowKeyModal(false);
           };
