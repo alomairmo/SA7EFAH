@@ -18,16 +18,9 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* إصلاح لتوسيط الأيقونات */
-        i.fas, i.fa-solid {
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            line-height: 1 !important;
-        }
-        .fa-spin {
-            transform-origin: center center !important;
-        }
+        /* إصلاح التوسيط والدوران */
+        i.fas, i.fa-solid { display: inline-flex !important; align-items: center !important; justify-content: center !important; }
+        i.fa-spin { transform-origin: 50% 50% !important; display: inline-block !important; text-align: center; }
     </style>
     
     <!-- React & ReactDOM -->
@@ -115,9 +108,14 @@
         const Compass = createIcon('fas fa-compass fa-fw');
         const Feather = createIcon('fas fa-feather fa-fw');
         const Flame = createIcon('fas fa-fire fa-fw');
+        // أيقونات جديدة للتكبير والتصغير
+        const Maximize = createIcon('fas fa-expand fa-fw');
+        const Minimize = createIcon('fas fa-compress fa-fw');
+        const PlusIcon = createIcon('fas fa-plus fa-fw');
+        const MinusIcon = createIcon('fas fa-minus fa-fw');
 
         // ==========================================
-        // 2. إعدادات قواعد البيانات فقط 
+        // 2. إعدادات قواعد البيانات 
         // ==========================================
         const myFirebaseConfig = {
           apiKey: "AIzaSyDDokNKC3OcV2Z_dG-AqPNBd4pQzhxd5jk",
@@ -145,12 +143,8 @@
             super(props);
             this.state = { hasError: false, errorMsg: '' };
           }
-          static getDerivedStateFromError(error) {
-            return { hasError: true, errorMsg: error.toString() };
-          }
-          componentDidCatch(error, errorInfo) {
-            console.error("App crashed:", error, errorInfo);
-          }
+          static getDerivedStateFromError(error) { return { hasError: true, errorMsg: error.toString() }; }
+          componentDidCatch(error, errorInfo) { console.error("App crashed:", error, errorInfo); }
           render() {
             if (this.state.hasError) {
               return (
@@ -167,25 +161,20 @@
         }
 
         // ==========================================
-        // 4. استكشاف الذكاء الاصطناعي التلقائي (الذكي)
+        // 4. استكشاف الذكاء الاصطناعي التلقائي
         // ==========================================
         const getValidGeminiModel = async (apiKey) => {
           if (!apiKey) throw new Error("API_KEY_MISSING");
           if (window.discoveredModelCache) return window.discoveredModelCache;
-
           try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
             const data = await res.json();
-            
             if (data.error) throw new Error(data.error.message);
-
             if (data.models && data.models.length > 0) {
               const validModels = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
               let selected = validModels.find(m => m.name === 'models/gemini-1.5-flash') ||
                              validModels.find(m => m.name.includes("flash")) ||
-                             validModels.find(m => m.name.includes("pro")) ||
-                             validModels[0];
-              
+                             validModels.find(m => m.name.includes("pro")) || validModels[0];
               if (selected) {
                 window.discoveredModelCache = selected.name.replace('models/', '');
                 return window.discoveredModelCache;
@@ -385,39 +374,60 @@ ${recentContext}\n${criteriaPrompt}`;
         };
 
         // ==========================================
-        // 6. الرسوم البيانية المتطورة
+        // 6. الرسوم البيانية المتطورة ومتحكمات التكبير
         // ==========================================
-        const BarChartComponent = ({ data, onBarClick }) => {
-          return (
-            <div className="w-full overflow-x-auto bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-end justify-between min-w-max gap-3 h-[280px] pt-12 scrollbar-hide">
-               {data.map((d, i) => {
-                  const score = parseFloat(d.displayScore || 0);
-                  const hasData = d.entry || d.entriesCount > 0;
-                  const heightPercentage = hasData ? Math.max(8, (score / 10) * 100) : 4;
+        const ChartControls = ({ zoomLevel, setZoomLevel, isFullscreen, setIsFullscreen }) => (
+          <div className="flex justify-center items-center gap-4 mt-4 bg-gray-100 p-2 rounded-2xl w-fit mx-auto shadow-inner border border-gray-200">
+             <button onClick={() => setZoomLevel(Math.max(1, zoomLevel - 0.5))} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition" title="تصغير">
+               <MinusIcon className="text-sm"/>
+             </button>
+             <button onClick={() => setIsFullscreen(!isFullscreen)} className="px-6 py-2 h-10 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 font-bold text-sm flex items-center gap-2 transition">
+                {isFullscreen ? <Minimize className="text-sm"/> : <Maximize className="text-sm"/>}
+                {isFullscreen ? 'إلغاء ملء الشاشة' : 'ملء الشاشة'}
+             </button>
+             <button onClick={() => setZoomLevel(zoomLevel + 0.5)} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition" title="تكبير">
+               <PlusIcon className="text-sm"/>
+             </button>
+          </div>
+        );
 
-                  return (
-                    <button key={i} onClick={() => hasData ? onBarClick(d) : null} className={`flex flex-col items-center group relative w-10 shrink-0 h-full justify-end ${hasData ? 'cursor-pointer' : 'cursor-default opacity-50'}`}>
-                      {hasData && (
-                        <div className="opacity-0 group-hover:opacity-100 absolute -top-10 bg-slate-800 text-white text-xs font-bold py-1.5 px-3 rounded-lg pointer-events-none whitespace-nowrap z-10 transition-opacity">
-                          {score} - {d.entry?.title || d.title || ''}
-                        </div>
-                      )}
-                      <div className={`w-full rounded-xl transition-all duration-500 ${hasData ? getChartBgColorClass(score) : 'bg-gray-200'} group-hover:opacity-80`} style={{ height: `${heightPercentage}%` }}></div>
-                      <span className={`text-[11px] mt-3 font-bold ${hasData ? 'text-gray-700' : 'text-gray-400'}`}>{d.label || d.dayNum}</span>
-                    </button>
-                  )
-               })}
+        const BarChartComponent = ({ data, onBarClick, zoomLevel, isFullscreen }) => {
+          // حساب العرض الديناميكي بناءً على التكبير وعدد العناصر
+          const containerWidth = Math.max(100, data.length * 40 * zoomLevel);
+          
+          return (
+            <div className={`w-full overflow-x-auto scrollbar-hide ${isFullscreen ? 'h-full' : 'h-[300px]'} pt-12`}>
+              <div className="flex items-end justify-between min-w-max gap-3 h-full px-4" style={{ width: `${containerWidth}%` }}>
+                 {data.map((d, i) => {
+                    const score = parseFloat(d.displayScore || 0);
+                    const hasData = d.entry || d.entriesCount > 0;
+                    const heightPercentage = hasData ? Math.max(8, (score / 10) * 100) : 4;
+
+                    return (
+                      <button key={i} onClick={() => hasData ? onBarClick(d) : null} className={`flex flex-col items-center group relative w-10 shrink-0 h-full justify-end ${hasData ? 'cursor-pointer' : 'cursor-default opacity-50'}`}>
+                        {hasData && (
+                          <div className="opacity-0 group-hover:opacity-100 absolute -top-10 bg-slate-800 text-white text-xs font-bold py-1.5 px-3 rounded-lg pointer-events-none whitespace-nowrap z-10 transition-opacity">
+                            {score} - {d.entry?.title || d.title || ''}
+                          </div>
+                        )}
+                        <div className={`w-full rounded-xl transition-all duration-500 ${hasData ? getChartBgColorClass(score) : 'bg-gray-200'} group-hover:opacity-80`} style={{ height: `${heightPercentage}%` }}></div>
+                        <span className={`text-[11px] mt-3 font-bold ${hasData ? 'text-gray-700' : 'text-gray-400'}`}>{d.label || d.dayNum}</span>
+                      </button>
+                    )
+                 })}
+              </div>
             </div>
           )
         };
 
-        const LineChartComponent = ({ data, totalItems, onPointClick }) => {
+        const LineChartComponent = ({ data, totalItems, onPointClick, zoomLevel, isFullscreen }) => {
           const validData = data.filter(d => d.entry || d.entriesCount > 0);
-          if(validData.length === 0) return <div className="text-center p-10 text-gray-500 bg-white rounded-3xl border border-gray-100 mt-4">لا توجد بيانات كافية للرسم البياني.</div>;
+          if(validData.length === 0) return <div className="text-center p-10 text-gray-500 bg-white rounded-3xl border border-gray-100 mt-4 w-full">لا توجد بيانات كافية للرسم البياني.</div>;
 
           const padding = 40;
-          const svgWidth = Math.max(400, totalItems * 45);
-          const svgHeight = 260;
+          // تكبير العرض مع الحفاظ على التمرير الأفقي
+          const svgWidth = Math.max(400, totalItems * 50 * zoomLevel);
+          const svgHeight = isFullscreen ? window.innerHeight - 200 : 260;
           const usableHeight = svgHeight - padding * 2;
 
           const points = validData.map(d => {
@@ -431,7 +441,7 @@ ${recentContext}\n${criteriaPrompt}`;
           const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
           return (
-            <div className="w-full overflow-x-auto bg-white rounded-3xl p-4 shadow-sm border border-gray-100 scrollbar-hide">
+            <div className="w-full overflow-x-auto scrollbar-hide">
               <svg width={svgWidth} height={svgHeight} className="overflow-visible min-w-full">
                  {[0, 2.5, 5, 7.5, 10].map(val => (
                    <g key={val}>
@@ -743,11 +753,12 @@ ${recentContext}\n${criteriaPrompt}`;
 
               <div className="px-5 mt-6 flex flex-col gap-6 relative z-10">
                 <div className="grid grid-cols-2 gap-3">
-                  <button onClick={goToCalendar} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 hover:bg-blue-50 active:scale-95 transition">
-                    <CalendarDays className="text-2xl text-blue-500" /><span className="font-bold text-gray-700 text-sm">عرض الأيام</span>
+                  {/* ألوان زاهية وواضحة لأزرار التقويم */}
+                  <button onClick={goToCalendar} className="bg-blue-100 p-4 rounded-2xl shadow-sm border border-blue-200 flex flex-col items-center gap-2 hover:bg-blue-200 active:scale-95 transition">
+                    <CalendarDays className="text-3xl text-blue-600" /><span className="font-bold text-blue-900 text-sm">التقويم الشهري</span>
                   </button>
-                  <button onClick={goToYear} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 hover:bg-blue-50 active:scale-95 transition">
-                    <Calendar className="text-2xl text-purple-500" /><span className="font-bold text-gray-700 text-sm">عرض الشهور</span>
+                  <button onClick={goToYear} className="bg-purple-100 p-4 rounded-2xl shadow-sm border border-purple-200 flex flex-col items-center gap-2 hover:bg-purple-200 active:scale-95 transition">
+                    <Calendar className="text-3xl text-purple-600" /><span className="font-bold text-purple-900 text-sm">التقويم السنوي</span>
                   </button>
                 </div>
 
@@ -798,6 +809,8 @@ ${recentContext}\n${criteriaPrompt}`;
           const [calendarMode, setCalendarMode] = useState('grid');
           const [sortOption, setSortOption] = useState('date_desc');
           const [chartMetric, setChartMetric] = useState('average');
+          const [zoomLevel, setZoomLevel] = useState(1);
+          const [isFullscreen, setIsFullscreen] = useState(false);
           
           const year = currentMonth.getFullYear();
           const month = currentMonth.getMonth();
@@ -833,43 +846,49 @@ ${recentContext}\n${criteriaPrompt}`;
           }, [allDays, chartMetric]);
 
           return (
-            <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
-              <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
-                <div className="flex justify-between items-center mb-4">
-                  <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="text-lg" /></button>
-                  <h1 className="text-xl font-extrabold text-gray-800">{monthNames[month]} {year}</h1>
-                  <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="text-lg" /></button>
-                </div>
-                <div className="text-center"><p className="text-gray-400 text-xs font-bold uppercase">اللقب</p><h2 className="text-lg font-bold text-gray-800 truncate">{mTitle}</h2></div>
-              </header>
-
-              <div className="px-5 mt-6 mb-6">
-                <div className="flex justify-between items-center mb-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
-                  <button onClick={goToDashboard} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition font-bold text-sm shrink-0">
-                    <Home className="text-sm" /> الرئيسية
-                  </button>
-                  <div className="flex gap-1 flex-1 justify-center mx-2 shrink-0">
-                    <button onClick={() => setCalendarMode('grid')} className={`p-2 rounded-xl transition ${calendarMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="text-lg" /></button>
-                    <button onClick={() => setCalendarMode('list')} className={`p-2 rounded-xl transition ${calendarMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="text-lg" /></button>
-                    <button onClick={() => setCalendarMode('bar')} className={`p-2 rounded-xl transition ${calendarMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="text-lg" /></button>
-                    <button onClick={() => setCalendarMode('line')} className={`p-2 rounded-xl transition ${calendarMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="text-lg" /></button>
+            <div className={`flex-1 overflow-y-auto relative pb-10 ${isFullscreen ? 'bg-slate-900 fixed inset-0 z-[100] flex flex-col p-4' : 'bg-slate-50'}`}>
+              {!isFullscreen && (
+                <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
+                  <div className="flex justify-center mb-4">
+                    <button onClick={goToDashboard} className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl transition font-bold text-sm shadow-md">
+                      <Home className="text-sm" /> الرئيسية
+                    </button>
                   </div>
-                  
-                  {calendarMode === 'list' && (
-                    <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="bg-gray-50 text-xs border-none outline-none focus:ring-2 focus:ring-blue-100 rounded-xl px-2 py-2 text-gray-600 font-bold w-[90px] shrink-0">
-                      <option value="date_desc">الأحدث</option><option value="date_asc">الأقدم</option>
-                      <option value="status">المنجزة</option><option value="score_desc">الأعلى</option><option value="score_asc">الأقل</option>
-                    </select>
-                  )}
-                  {(calendarMode === 'bar' || calendarMode === 'line') && (
-                     <select value={chartMetric} onChange={(e) => setChartMetric(e.target.value)} className="bg-blue-50 text-blue-700 text-xs border-none outline-none focus:ring-2 focus:ring-blue-200 rounded-xl px-2 py-2 font-bold max-w-[120px] shrink-0">
-                       <option value="average">التقييم الكلي</option>
-                       {criteria.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                     </select>
-                  )}
-                </div>
+                  <div className="flex justify-between items-center mb-4">
+                    <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="text-lg" /></button>
+                    <h1 className="text-xl font-extrabold text-gray-800">{monthNames[month]} {year}</h1>
+                    <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="text-lg" /></button>
+                  </div>
+                  <div className="text-center"><p className="text-gray-400 text-xs font-bold uppercase">اللقب</p><h2 className="text-lg font-bold text-gray-800 truncate">{mTitle}</h2></div>
+                </header>
+              )}
 
-                {calendarMode === 'grid' && (
+              <div className={`px-5 mt-6 mb-6 ${isFullscreen ? 'flex-1 flex flex-col h-full' : ''}`}>
+                {!isFullscreen && (
+                  <div className="flex justify-between items-center mb-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-1 flex-1 justify-center mx-2 shrink-0">
+                      <button onClick={() => setCalendarMode('grid')} className={`p-2 rounded-xl transition ${calendarMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="text-lg" /></button>
+                      <button onClick={() => setCalendarMode('list')} className={`p-2 rounded-xl transition ${calendarMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="text-lg" /></button>
+                      <button onClick={() => setCalendarMode('bar')} className={`p-2 rounded-xl transition ${calendarMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="text-lg" /></button>
+                      <button onClick={() => setCalendarMode('line')} className={`p-2 rounded-xl transition ${calendarMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="text-lg" /></button>
+                    </div>
+                    
+                    {calendarMode === 'list' && (
+                      <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="bg-gray-50 text-xs border-none outline-none focus:ring-2 focus:ring-blue-100 rounded-xl px-2 py-2 text-gray-600 font-bold w-[90px] shrink-0">
+                        <option value="date_desc">الأحدث</option><option value="date_asc">الأقدم</option>
+                        <option value="status">المنجزة</option><option value="score_desc">الأعلى</option><option value="score_asc">الأقل</option>
+                      </select>
+                    )}
+                    {(calendarMode === 'bar' || calendarMode === 'line') && (
+                       <select value={chartMetric} onChange={(e) => setChartMetric(e.target.value)} className="bg-blue-50 text-blue-700 text-xs border-none outline-none focus:ring-2 focus:ring-blue-200 rounded-xl px-2 py-2 font-bold max-w-[120px] shrink-0">
+                         <option value="average">التقييم الكلي</option>
+                         {criteria.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                       </select>
+                    )}
+                  </div>
+                )}
+
+                {calendarMode === 'grid' && !isFullscreen && (
                   <div>
                     <div className="grid grid-cols-7 gap-2 mb-2">{['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'].map(day => <div key={day} className="text-center text-xs font-bold text-gray-400">{day}</div>)}</div>
                     <div className="grid grid-cols-7 gap-2">
@@ -887,7 +906,7 @@ ${recentContext}\n${criteriaPrompt}`;
                   </div>
                 )}
 
-                {calendarMode === 'list' && (
+                {calendarMode === 'list' && !isFullscreen && (
                   <div className="flex flex-col gap-3">
                     {sortedDays.map(({ date, dayNum, entry }) => (
                       <button key={date} onClick={() => entry ? goToDetails(date) : goToForm(date)} className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all hover:scale-[1.02] ${entry ? 'bg-white border-gray-100 shadow-sm' : 'bg-gray-50 border-gray-200 border-dashed text-gray-400'}`}>
@@ -904,8 +923,20 @@ ${recentContext}\n${criteriaPrompt}`;
                   </div>
                 )}
 
-                {calendarMode === 'bar' && <BarChartComponent data={chartData} onBarClick={(d) => goToDetails(d.date)} />}
-                {calendarMode === 'line' && <LineChartComponent data={chartData} totalItems={daysInMonth} onPointClick={(d) => goToDetails(d.date)} />}
+                {/* حاوية الرسوم البيانية المتطورة */}
+                {(calendarMode === 'bar' || calendarMode === 'line') && (
+                  <div className={`w-full flex-1 flex flex-col bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isFullscreen ? 'h-full' : ''}`}>
+                    <div className="w-full flex-1 overflow-x-auto scrollbar-hide flex items-center">
+                       {calendarMode === 'bar' && <BarChartComponent data={chartData} onBarClick={(d) => goToDetails(d.date)} zoomLevel={zoomLevel} isFullscreen={isFullscreen} />}
+                       {calendarMode === 'line' && <LineChartComponent data={chartData} totalItems={daysInMonth} onPointClick={(d) => goToDetails(d.date)} zoomLevel={zoomLevel} isFullscreen={isFullscreen} />}
+                    </div>
+                  </div>
+                )}
+
+                {/* أزرار التحكم بالرسم البياني */}
+                {(calendarMode === 'bar' || calendarMode === 'line') && (
+                   <ChartControls zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} isFullscreen={isFullscreen} setIsFullscreen={setIsFullscreen} />
+                )}
               </div>
             </div>
           );
@@ -915,6 +946,8 @@ ${recentContext}\n${criteriaPrompt}`;
           const [viewMode, setViewMode] = useState('grid');
           const [yearSortOption, setYearSortOption] = useState('month_desc');
           const [chartMetric, setChartMetric] = useState('average');
+          const [zoomLevel, setZoomLevel] = useState(1);
+          const [isFullscreen, setIsFullscreen] = useState(false);
           
           const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
           
@@ -961,41 +994,47 @@ ${recentContext}\n${criteriaPrompt}`;
           }, [monthsData, chartMetric]);
 
           return (
-            <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
-               <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
-                <div className="flex justify-between items-center mb-4">
-                  <button onClick={() => setCurrentYear(currentYear - 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="text-lg" /></button>
-                  <h1 className="text-xl font-extrabold text-gray-800">سنة {currentYear}</h1>
-                  <button onClick={() => setCurrentYear(currentYear + 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="text-lg" /></button>
-                </div>
-              </header>
-
-              <div className="px-5 mt-6 mb-6">
-                <div className="flex justify-between items-center mb-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
-                  <button onClick={goToDashboard} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition font-bold text-sm shrink-0">
-                    <Home className="text-sm" /> الرئيسية
-                  </button>
-                  <div className="flex gap-1 flex-1 justify-center mx-2 shrink-0">
-                    <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl transition ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="text-lg" /></button>
-                    <button onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="text-lg" /></button>
-                    <button onClick={() => setViewMode('bar')} className={`p-2 rounded-xl transition ${viewMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="text-lg" /></button>
-                    <button onClick={() => setViewMode('line')} className={`p-2 rounded-xl transition ${viewMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="text-lg" /></button>
+            <div className={`flex-1 overflow-y-auto relative pb-10 ${isFullscreen ? 'bg-slate-900 fixed inset-0 z-[100] flex flex-col p-4' : 'bg-slate-50'}`}>
+               {!isFullscreen && (
+                 <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
+                  <div className="flex justify-center mb-4">
+                    <button onClick={goToDashboard} className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-xl transition font-bold text-sm shadow-md">
+                      <Home className="text-sm" /> الرئيسية
+                    </button>
                   </div>
-                  {viewMode === 'list' && (
-                    <select value={yearSortOption} onChange={(e) => setYearSortOption(e.target.value)} className="bg-gray-50 text-xs border-none outline-none focus:ring-2 focus:ring-blue-100 rounded-xl px-2 py-2 text-gray-600 font-bold max-w-[100px] shrink-0">
-                      <option value="month_desc">الأحدث</option><option value="month_asc">الأقدم</option>
-                      <option value="score_desc">الأعلى</option><option value="score_asc">الأقل</option>
-                    </select>
-                  )}
-                  {(viewMode === 'bar' || viewMode === 'line') && (
-                     <select value={chartMetric} onChange={(e) => setChartMetric(e.target.value)} className="bg-blue-50 text-blue-700 text-xs border-none outline-none focus:ring-2 focus:ring-blue-200 rounded-xl px-2 py-2 font-bold max-w-[120px] shrink-0">
-                       <option value="average">التقييم الكلي</option>
-                       {criteria.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
-                     </select>
-                  )}
-                </div>
+                  <div className="flex justify-between items-center mb-4">
+                    <button onClick={() => setCurrentYear(currentYear - 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="text-lg" /></button>
+                    <h1 className="text-xl font-extrabold text-gray-800">سنة {currentYear}</h1>
+                    <button onClick={() => setCurrentYear(currentYear + 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="text-lg" /></button>
+                  </div>
+                </header>
+               )}
 
-                {viewMode === 'grid' && (
+              <div className={`px-5 mt-6 mb-6 ${isFullscreen ? 'flex-1 flex flex-col h-full' : ''}`}>
+                {!isFullscreen && (
+                  <div className="flex justify-between items-center mb-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
+                    <div className="flex gap-1 flex-1 justify-center mx-2 shrink-0">
+                      <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl transition ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="text-lg" /></button>
+                      <button onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="text-lg" /></button>
+                      <button onClick={() => setViewMode('bar')} className={`p-2 rounded-xl transition ${viewMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="text-lg" /></button>
+                      <button onClick={() => setViewMode('line')} className={`p-2 rounded-xl transition ${viewMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="text-lg" /></button>
+                    </div>
+                    {viewMode === 'list' && (
+                      <select value={yearSortOption} onChange={(e) => setYearSortOption(e.target.value)} className="bg-gray-50 text-xs border-none outline-none focus:ring-2 focus:ring-blue-100 rounded-xl px-2 py-2 text-gray-600 font-bold max-w-[100px] shrink-0">
+                        <option value="month_desc">الأحدث</option><option value="month_asc">الأقدم</option>
+                        <option value="score_desc">الأعلى</option><option value="score_asc">الأقل</option>
+                      </select>
+                    )}
+                    {(viewMode === 'bar' || viewMode === 'line') && (
+                       <select value={chartMetric} onChange={(e) => setChartMetric(e.target.value)} className="bg-blue-50 text-blue-700 text-xs border-none outline-none focus:ring-2 focus:ring-blue-200 rounded-xl px-2 py-2 font-bold max-w-[120px] shrink-0">
+                         <option value="average">التقييم الكلي</option>
+                         {criteria.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                       </select>
+                    )}
+                  </div>
+                )}
+
+                {viewMode === 'grid' && !isFullscreen && (
                    <div className="grid grid-cols-3 gap-3">
                      {monthsData.map((m) => (
                        <button key={m.index} onClick={() => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} className={`aspect-square rounded-2xl p-3 flex flex-col items-center justify-center border-2 transition-transform hover:scale-105 ${getColorClass(m.avg)}`}>
@@ -1006,7 +1045,7 @@ ${recentContext}\n${criteriaPrompt}`;
                    </div>
                 )}
                 
-                {viewMode === 'list' && (
+                {viewMode === 'list' && !isFullscreen && (
                    <div className="flex flex-col gap-3">
                     {sortedMonths.map((m) => (
                       <button key={m.index} onClick={() => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all hover:scale-[1.02] ${m.entriesCount > 0 ? 'bg-white border-gray-100 shadow-sm' : 'bg-gray-50 border-gray-200 border-dashed text-gray-400'}`}>
@@ -1023,8 +1062,20 @@ ${recentContext}\n${criteriaPrompt}`;
                   </div>
                 )}
 
-                {viewMode === 'bar' && <BarChartComponent data={chartData} onBarClick={(m) => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} />}
-                {viewMode === 'line' && <LineChartComponent data={chartData} totalItems={12} onPointClick={(m) => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} />}
+                {/* حاوية الرسوم البيانية المتطورة */}
+                {(viewMode === 'bar' || viewMode === 'line') && (
+                  <div className={`w-full flex-1 flex flex-col bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden ${isFullscreen ? 'h-full' : ''}`}>
+                    <div className="w-full flex-1 overflow-x-auto scrollbar-hide flex items-center">
+                       {viewMode === 'bar' && <BarChartComponent data={chartData} onBarClick={(m) => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} zoomLevel={zoomLevel} isFullscreen={isFullscreen} />}
+                       {viewMode === 'line' && <LineChartComponent data={chartData} totalItems={12} onPointClick={(m) => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} zoomLevel={zoomLevel} isFullscreen={isFullscreen} />}
+                    </div>
+                  </div>
+                )}
+
+                {/* أزرار التحكم بالرسم البياني */}
+                {(viewMode === 'bar' || viewMode === 'line') && (
+                   <ChartControls zoomLevel={zoomLevel} setZoomLevel={setZoomLevel} isFullscreen={isFullscreen} setIsFullscreen={setIsFullscreen} />
+                )}
               </div>
             </div>
           );
@@ -1470,7 +1521,7 @@ ${recentContext}\n${criteriaPrompt}`;
         };
 
         // ==========================================
-        // 8. المكون الرئيسي والتطبيق (مع نظام المفتاح المنبثق)
+        // 8. المكون الرئيسي والتطبيق
         // ==========================================
         function MainApp({ user }) {
           const [entries, setEntries] = useState({});
@@ -1491,45 +1542,74 @@ ${recentContext}\n${criteriaPrompt}`;
           useEffect(() => {
             if (!user || !db) return;
             
-            const keyRef = db.doc(`artifacts/${appIdStr}/public/data/appSettings/globalKey`);
-            const unsubKey = keyRef.onSnapshot((docSnap) => {
-              if (docSnap.exists) {
-                setGlobalApiKey(docSnap.data().apiKey || "");
-              } else {
-                setGlobalApiKey("");
+            let isMounted = true;
+
+            const loadKeyFallback = async () => {
+              try {
+                const publicDoc = await db.doc(`artifacts/${appIdStr}/public/data/appSettings/globalKey`).get();
+                if (publicDoc.exists && publicDoc.data().apiKey) {
+                  if(isMounted) { setGlobalApiKey(publicDoc.data().apiKey); setIsCheckingKey(false); }
+                  return;
+                }
+              } catch(e) { console.warn("تعذر الوصول للمسار العام للمفتاح"); }
+
+              try {
+                const privateDoc = await db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).get();
+                if (privateDoc.exists && privateDoc.data().geminiKey) {
+                  if(isMounted) { setGlobalApiKey(privateDoc.data().geminiKey); setIsCheckingKey(false); }
+                  return;
+                }
+              } catch(e) { console.warn("تعذر الوصول للمسار الخاص للمفتاح"); }
+
+              const localKey = localStorage.getItem('geminiApiKey');
+              if(isMounted) {
+                setGlobalApiKey(localKey || "");
+                setIsCheckingKey(false);
               }
-              setIsCheckingKey(false);
-            }, (err) => { 
-              console.error("Error loading key", err); 
-              setIsCheckingKey(false); 
-            });
+            };
+
+            loadKeyFallback();
 
             const unsubEntries = db.collection(`artifacts/${appIdStr}/users/${user.uid}/entries`).onSnapshot((snapshot) => {
               const loadedEntries = {};
               snapshot.forEach(doc => { loadedEntries[doc.id] = doc.data(); });
-              setEntries(loadedEntries);
-              setIsLoadingData(false);
-            }, (err) => { console.error("Error loading entries", err); setIsLoadingData(false); });
+              if(isMounted) { setEntries(loadedEntries); setIsLoadingData(false); }
+            }, (err) => { console.error("Error loading entries", err); if(isMounted) setIsLoadingData(false); });
 
             const unsubSettings = db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).onSnapshot((docSnap) => {
               if (docSnap.exists) {
                 const data = docSnap.data();
-                if (data.criteria && Array.isArray(data.criteria) && data.criteria.length > 0) setCriteria(data.criteria);
-                if (data.monthlyTitles) setMonthlyTitles(data.monthlyTitles);
+                if (data.criteria && Array.isArray(data.criteria) && data.criteria.length > 0 && isMounted) setCriteria(data.criteria);
+                if (data.monthlyTitles && isMounted) setMonthlyTitles(data.monthlyTitles);
               }
             });
 
-            return () => { unsubEntries(); unsubSettings(); unsubKey(); };
+            return () => { isMounted = false; unsubEntries(); unsubSettings(); };
           }, [user]);
 
           const handleSaveGlobalKey = async () => {
             if(!inputKey.trim()) return alert("يرجى إدخال المفتاح أولاً.");
+            const keyToSave = inputKey.trim();
+            
+            let saved = false;
+
             try {
-              await db.doc(`artifacts/${appIdStr}/public/data/appSettings/globalKey`).set({ apiKey: inputKey.trim() }, { merge: true });
-              setShowKeyModal(false);
-            } catch(e) {
-              alert("حدث خطأ أثناء حفظ المفتاح العام.");
+              await db.doc(`artifacts/${appIdStr}/public/data/appSettings/globalKey`).set({ apiKey: keyToSave }, { merge: true });
+              saved = true;
+            } catch(e) { console.warn("فشل حفظ المفتاح في المسار العام."); }
+
+            if (!saved) {
+               try {
+                 await db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).set({ geminiKey: keyToSave }, { merge: true });
+                 saved = true;
+               } catch(e) { console.warn("فشل حفظ المفتاح في المسار الخاص."); }
             }
+
+            localStorage.setItem('geminiApiKey', keyToSave);
+            
+            // تحديث الواجهة فوراً لكي تختفي التنبيهات
+            setGlobalApiKey(keyToSave);
+            setShowKeyModal(false);
           };
 
           const updateEntryData = async (date, updatedData) => {
@@ -1574,16 +1654,20 @@ ${recentContext}\n${criteriaPrompt}`;
             return <div className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center"><Loader className="text-4xl animate-spin text-blue-500" /></div>;
           }
 
+          const showGlobalKeyModal = globalApiKey === "";
+
           return (
             <div className="max-w-md mx-auto h-screen bg-slate-100 shadow-2xl font-sans relative flex flex-col overflow-hidden" dir="rtl">
               
-              {showKeyModal && (
+              {(showGlobalKeyModal || showKeyModal) && (
                 <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
                   <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm flex flex-col gap-4 relative overflow-hidden">
                      <div className="absolute top-0 left-0 right-0 h-2 bg-blue-500"></div>
-                     <button onClick={() => setShowKeyModal(false)} className="absolute top-4 left-4 p-2 text-gray-400 hover:text-gray-700 bg-gray-50 rounded-full transition-colors">
-                       <X className="text-sm" />
-                     </button>
+                     {!showGlobalKeyModal && (
+                         <button onClick={() => setShowKeyModal(false)} className="absolute top-4 left-4 p-2 text-gray-400 hover:text-gray-700 bg-gray-50 rounded-full transition-colors">
+                           <X className="text-sm" />
+                         </button>
+                     )}
                      <h2 className="text-xl font-black text-gray-800 flex items-center gap-2 mt-2">
                        <Key className="text-xl text-blue-500" /> المفتاح العام للتطبيق
                      </h2>
