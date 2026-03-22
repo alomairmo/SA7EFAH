@@ -18,7 +18,7 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* إصلاح جذري لتوسيط الأيقونات ودوران علامة التحميل من المركز */
+        /* إصلاح لتوسيط الأيقونات */
         i.fas, i.fa-solid {
             display: inline-flex !important;
             align-items: center !important;
@@ -34,7 +34,7 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel لتحويل كود React -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <!-- Firebase -->
@@ -49,7 +49,7 @@
         const { useState, useEffect, useRef, useMemo, Component } = React;
 
         // ==========================================
-        // 1. الأيقونات (مع معالجة المركز)
+        // 1. الأيقونات
         // ==========================================
         const createIcon = (iconClass) => ({className}) => <i className={`${iconClass} ${className||''}`}></i>;
         
@@ -117,7 +117,7 @@
         const Flame = createIcon('fas fa-fire fa-fw');
 
         // ==========================================
-        // 2. إعدادات قواعد البيانات فقط (تم مسح المفتاح من الكود)
+        // 2. إعدادات قواعد البيانات فقط 
         // ==========================================
         const myFirebaseConfig = {
           apiKey: "AIzaSyDDokNKC3OcV2Z_dG-AqPNBd4pQzhxd5jk",
@@ -194,7 +194,6 @@
             throw new Error("المفتاح لا يدعم توليد النصوص.");
           } catch(e) { 
             if (e.message === "API_KEY_MISSING") throw e;
-            console.warn("استكشاف النماذج فشل، سيتم استخدام الافتراضي.");
             return "gemini-1.5-flash"; 
           }
         };
@@ -624,7 +623,7 @@ ${recentContext}\n${criteriaPrompt}`;
                     return (
                       <div key={c.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 flex items-center justify-center rounded-xl ${c.colorObj.main}`}><IconComp className="text-base text-white" /></div>
+                          <div className={`p-2 w-8 h-8 flex items-center justify-center rounded-xl ${c.colorObj.main}`}><IconComp className="text-sm text-white" /></div>
                           <div>
                             <h4 className="font-bold text-gray-800 text-sm">{c.label}</h4>
                             {c.desc && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[150px]">{c.desc}</p>}
@@ -643,7 +642,7 @@ ${recentContext}\n${criteriaPrompt}`;
           );
         };
 
-        const DashboardView = ({ entries, criteria, globalApiKey, goToCalendar, goToYear, goToSettings }) => {
+        const DashboardView = ({ entries, criteria, globalApiKey, goToCalendar, goToYear, goToSettings, openKeyModal }) => {
           const [dashboardFilter, setDashboardFilter] = useState('40days');
           const [insights, setInsights] = useState(null);
           const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
@@ -758,6 +757,7 @@ ${recentContext}\n${criteriaPrompt}`;
                          <AlertCircle className="text-xl" />
                          <span className="text-sm font-bold">مفتاح الذكاء الاصطناعي مفقود!</span>
                       </div>
+                      <button onClick={openKeyModal} className="px-4 py-2 bg-amber-600 text-white text-xs font-bold rounded-xl shadow-md hover:bg-amber-700 transition">إدخال المفتاح</button>
                    </div>
                 )}
 
@@ -781,7 +781,7 @@ ${recentContext}\n${criteriaPrompt}`;
                               <div className={`h-full ${cat.colorObj.main} rounded-full transition-all duration-1000`} style={{ width: `${(parseFloat(score) / 10) * 100}%` }}></div>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-2xl text-sm leading-relaxed text-gray-600 font-medium border border-gray-100">
-                               {!globalApiKey ? "الذكاء الاصطناعي قيد التجهيز..." : (isGeneratingInsights ? <Loader className="text-sm animate-spin text-gray-400"/> : (insights?.[`advice_${cat.id}`] || "الذكاء الاصطناعي يحلل بياناتك."))}
+                               {!globalApiKey ? "أضف مفتاح API للحصول على نصائح." : (isGeneratingInsights ? <Loader className="text-sm animate-spin text-gray-400"/> : (insights?.[`advice_${cat.id}`] || "الذكاء الاصطناعي يحلل بياناتك."))}
                             </div>
                           </div>
                         )
@@ -1030,7 +1030,7 @@ ${recentContext}\n${criteriaPrompt}`;
           );
         };
 
-        const EntryFormView = ({ selectedDate, setSelectedDate, entries, criteria, saveEntry, goToCalendar, goToDetails, globalApiKey }) => {
+        const EntryFormView = ({ selectedDate, setSelectedDate, entries, criteria, saveEntry, goToCalendar, goToDetails, globalApiKey, openKeyModal }) => {
           const [transcript, setTranscript] = useState("");
           const [isRecording, setIsRecording] = useState(false);
           const [recordingTime, setRecordingTime] = useState(0);
@@ -1116,11 +1116,10 @@ ${recentContext}\n${criteriaPrompt}`;
           };
 
           const handleAnalyze = async () => {
-            if (!transcript.trim() && !audioData) return setError("الرجاء إدخال نص أو تسجيل مقطع صوتي.");
-            
             if (!globalApiKey || globalApiKey.trim() === "") {
-                return setError("يجب التأكد من صحة مفتاح الذكاء الاصطناعي العام.");
+                return setError("مفتاح الذكاء الاصطناعي مفقود. يرجى إدخاله لكي تتمكن من تحليل يومياتك.");
             }
+            if (!transcript.trim() && !audioData) return setError("الرجاء إدخال نص أو تسجيل مقطع صوتي.");
 
             setIsAnalyzing(true); setError(null);
             try {
@@ -1184,7 +1183,18 @@ ${recentContext}\n${criteriaPrompt}`;
                 <div className="w-9"></div>
               </header>
 
-              <div className="p-6 flex-1 flex flex-col gap-6">
+              <div className="p-6 flex-1 flex flex-col gap-4">
+                
+                {!globalApiKey && (
+                   <div className="bg-amber-50 p-4 rounded-2xl flex items-center justify-between border border-amber-200 shrink-0">
+                      <div className="flex items-center gap-3 text-amber-800">
+                         <AlertCircle className="text-xl shrink-0" />
+                         <span className="text-sm font-bold">المفتاح مفقود لتفعيل الذكاء الاصطناعي</span>
+                      </div>
+                      <button onClick={openKeyModal} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-md transition-colors">إدخال المفتاح</button>
+                   </div>
+                )}
+
                 <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex-1 flex flex-col items-center relative min-h-[300px]">
                   
                   {entries[selectedDate] && (
@@ -1225,10 +1235,13 @@ ${recentContext}\n${criteriaPrompt}`;
                         <p className="text-red-600 text-xs font-medium leading-relaxed">{error}</p>
                       </div>
                     </div>
+                    {error.includes("مفتاح") && (
+                       <button onClick={openKeyModal} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl mt-2 text-xs transition self-start ml-8">إدخال المفتاح الآن</button>
+                    )}
                   </div>
                 )}
                 
-                <button onClick={handleAnalyze} disabled={isAnalyzing || (!transcript.trim() && !audioData)} className="bg-blue-600 text-white w-full py-5 rounded-2xl font-black text-lg flex justify-center gap-2 shadow-xl shadow-blue-500/50 disabled:opacity-50 hover:bg-blue-700 shrink-0">
+                <button onClick={handleAnalyze} disabled={isAnalyzing || (!transcript.trim() && !audioData)} className="bg-blue-600 text-white w-full py-5 rounded-2xl font-black text-lg flex justify-center gap-2 shadow-xl shadow-blue-500/50 disabled:opacity-50 hover:bg-blue-700 shrink-0 mt-2">
                   {isAnalyzing ? <><Loader className="text-xl animate-spin" /> جاري التحليل والإضافة...</> : (error && globalApiKey ? <><RefreshCw className="text-lg"/> إعادة المحاولة</> : 'حفظ وتحليل')}
                 </button>
 
@@ -1252,7 +1265,7 @@ ${recentContext}\n${criteriaPrompt}`;
           );
         };
 
-        const EntryDetailsView = ({ selectedDate, entries, criteria, goToCalendar, goToForm, updateEntryData, globalApiKey }) => {
+        const EntryDetailsView = ({ selectedDate, entries, criteria, goToCalendar, goToForm, updateEntryData, globalApiKey, openKeyModal }) => {
           const entry = entries?.[selectedDate];
           const [chatInput, setChatInput] = useState("");
           const [isChatting, setIsChatting] = useState(false);
@@ -1279,7 +1292,7 @@ ${recentContext}\n${criteriaPrompt}`;
 
           const handleSendMessage = async () => {
             if (!chatInput.trim()) return;
-            if (!globalApiKey) { alert("المفتاح العام غير متوفر."); return; }
+            if (!globalApiKey) return alert("المفتاح العام غير متوفر.");
             
             const userMsg = chatInput;
             setChatInput("");
@@ -1404,9 +1417,14 @@ ${recentContext}\n${criteriaPrompt}`;
                 </div>
 
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col overflow-hidden mb-6 mt-2">
-                  <div className="bg-slate-900 p-4 flex items-center gap-3">
-                    <MessageSquare className="text-xl text-blue-400" />
-                    <h3 className="text-white font-bold text-sm">الدردشة وتعديل التقييم</h3>
+                  <div className="bg-slate-900 p-4 flex justify-between items-center gap-3">
+                    <div className="flex items-center gap-3">
+                        <MessageSquare className="text-xl text-blue-400" />
+                        <h3 className="text-white font-bold text-sm">الدردشة وتعديل التقييم</h3>
+                    </div>
+                    {!globalApiKey && (
+                        <button onClick={openKeyModal} className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 text-xs font-bold rounded-lg transition-colors">إدخال المفتاح</button>
+                    )}
                   </div>
                   
                   <div className="p-4 bg-slate-50 min-h-[150px] max-h-[300px] overflow-y-auto flex flex-col gap-3">
@@ -1436,7 +1454,7 @@ ${recentContext}\n${criteriaPrompt}`;
                     <input 
                       type="text" value={chatInput} onChange={e => setChatInput(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                      placeholder={globalApiKey ? "أخبرني المزيد لإضافته أو تعديله..." : "المفتاح العام غير متوفر للدردشة"}
+                      placeholder={globalApiKey ? "أخبرني المزيد لإضافته أو تعديله..." : "أدخل المفتاح أولاً للدردشة..."}
                       disabled={!globalApiKey}
                       className="flex-1 bg-gray-100 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium disabled:opacity-50"
                     />
@@ -1452,7 +1470,7 @@ ${recentContext}\n${criteriaPrompt}`;
         };
 
         // ==========================================
-        // 8. المكون الرئيسي والتطبيق (مع نظام المفتاح العام)
+        // 8. المكون الرئيسي والتطبيق (مع نظام المفتاح المنبثق)
         // ==========================================
         function MainApp({ user }) {
           const [entries, setEntries] = useState({});
@@ -1461,6 +1479,7 @@ ${recentContext}\n${criteriaPrompt}`;
           
           const [globalApiKey, setGlobalApiKey] = useState(null);
           const [isCheckingKey, setIsCheckingKey] = useState(true);
+          const [showKeyModal, setShowKeyModal] = useState(false);
           const [inputKey, setInputKey] = useState("");
           
           const [currentView, setCurrentView] = useState('dashboard');
@@ -1472,7 +1491,6 @@ ${recentContext}\n${criteriaPrompt}`;
           useEffect(() => {
             if (!user || !db) return;
             
-            // جلب المفتاح العام
             const keyRef = db.doc(`artifacts/${appIdStr}/public/data/appSettings/globalKey`);
             const unsubKey = keyRef.onSnapshot((docSnap) => {
               if (docSnap.exists) {
@@ -1508,6 +1526,7 @@ ${recentContext}\n${criteriaPrompt}`;
             if(!inputKey.trim()) return alert("يرجى إدخال المفتاح أولاً.");
             try {
               await db.doc(`artifacts/${appIdStr}/public/data/appSettings/globalKey`).set({ apiKey: inputKey.trim() }, { merge: true });
+              setShowKeyModal(false);
             } catch(e) {
               alert("حدث خطأ أثناء حفظ المفتاح العام.");
             }
@@ -1555,21 +1574,21 @@ ${recentContext}\n${criteriaPrompt}`;
             return <div className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center"><Loader className="text-4xl animate-spin text-blue-500" /></div>;
           }
 
-          const showGlobalKeyModal = globalApiKey === "";
-
           return (
             <div className="max-w-md mx-auto h-screen bg-slate-100 shadow-2xl font-sans relative flex flex-col overflow-hidden" dir="rtl">
               
-              {/* نافذة إدخال المفتاح العام (تظهر للمسؤول/أول شخص فقط) */}
-              {showGlobalKeyModal && (
+              {showKeyModal && (
                 <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
-                  <div className="bg-white rounded-3xl p-6 shadow-2xl w-full flex flex-col gap-4 relative overflow-hidden">
+                  <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm flex flex-col gap-4 relative overflow-hidden">
                      <div className="absolute top-0 left-0 right-0 h-2 bg-blue-500"></div>
+                     <button onClick={() => setShowKeyModal(false)} className="absolute top-4 left-4 p-2 text-gray-400 hover:text-gray-700 bg-gray-50 rounded-full transition-colors">
+                       <X className="text-sm" />
+                     </button>
                      <h2 className="text-xl font-black text-gray-800 flex items-center gap-2 mt-2">
-                       <Key className="text-xl text-blue-500" /> إعداد المفتاح العام
+                       <Key className="text-xl text-blue-500" /> المفتاح العام للتطبيق
                      </h2>
                      <p className="text-sm text-gray-600 font-medium leading-relaxed">
-                       مرحباً بك! يبدو أن هذه هي المرة الأولى لتشغيل التطبيق. يرجى إدخال مفتاح الذكاء الاصطناعي (Gemini API Key) لمرة واحدة فقط. سيتم حفظه بأمان في قاعدة البيانات لجميع المستخدمين، ولن تظهر هذه النافذة مجدداً.
+                       يرجى إدخال مفتاح الذكاء الاصطناعي (Gemini API Key). سيتم حفظه لمرة واحدة وتخزينه بأمان ليعمل التطبيق بشكل كامل وبدون تنبيهات.
                      </p>
                      <input 
                        type="password" 
@@ -1583,18 +1602,18 @@ ${recentContext}\n${criteriaPrompt}`;
                        onClick={handleSaveGlobalKey}
                        className="bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg mt-2"
                      >
-                       حفظ وبدء الاستخدام
+                       حفظ وتأكيد
                      </button>
                   </div>
                 </div>
               )}
 
-              {currentView === 'dashboard' && <DashboardView entries={entries} criteria={criteria} globalApiKey={globalApiKey} goToCalendar={() => {setCurrentMonth(new Date()); setCurrentView('calendar');}} goToYear={() => {setCurrentYear(new Date().getFullYear()); setCurrentView('year');}} goToSettings={() => setCurrentView('settings')} />}
+              {currentView === 'dashboard' && <DashboardView entries={entries} criteria={criteria} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToCalendar={() => {setCurrentMonth(new Date()); setCurrentView('calendar');}} goToYear={() => {setCurrentYear(new Date().getFullYear()); setCurrentView('year');}} goToSettings={() => setCurrentView('settings')} />}
               {currentView === 'settings' && <SettingsView criteria={criteria} saveCriteria={saveCriteriaData} goToDashboard={() => setCurrentView('dashboard')} />}
               {currentView === 'calendar' && <CalendarView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} goToDashboard={() => setCurrentView('dashboard')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
               {currentView === 'year' && <YearView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentYear={currentYear} setCurrentYear={setCurrentYear} goToDashboard={() => setCurrentView('dashboard')} setCurrentMonth={setCurrentMonth} setCurrentView={setCurrentView} />}
-              {currentView === 'form' && <EntryFormView selectedDate={selectedDate} setSelectedDate={setSelectedDate} entries={entries} criteria={criteria} saveEntry={saveEntryData} globalApiKey={globalApiKey} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
-              {currentView === 'details' && <EntryDetailsView selectedDate={selectedDate} entries={entries} criteria={criteria} updateEntryData={updateEntryData} globalApiKey={globalApiKey} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} />}
+              {currentView === 'form' && <EntryFormView selectedDate={selectedDate} setSelectedDate={setSelectedDate} entries={entries} criteria={criteria} saveEntry={saveEntryData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
+              {currentView === 'details' && <EntryDetailsView selectedDate={selectedDate} entries={entries} criteria={criteria} updateEntryData={updateEntryData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} />}
 
               {currentView === 'dashboard' && (
                 <div className="absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none z-50">
