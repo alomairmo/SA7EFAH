@@ -17,6 +17,17 @@
         body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* إصلاح جذري لتوسيط الأيقونات ودوران علامة التحميل من المركز */
+        i.fas, i.fa-solid {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            line-height: 1 !important;
+        }
+        .fa-spin {
+            transform-origin: center center !important;
+        }
     </style>
     
     <!-- React & ReactDOM -->
@@ -38,72 +49,96 @@
         const { useState, useEffect, useRef, useMemo, Component } = React;
 
         // ==========================================
-        // 1. الأيقونات (يجب تعريفها أولاً)
+        // 1. الأيقونات (مع معالجة المركز)
         // ==========================================
-        const Brain = ({className}) => <i className={`fas fa-brain ${className||''}`}></i>;
-        const Star = ({className}) => <i className={`fas fa-star ${className||''}`}></i>;
-        const Heart = ({className}) => <i className={`fas fa-heart ${className||''}`}></i>;
-        const Users = ({className}) => <i className={`fas fa-users ${className||''}`}></i>;
-        const Briefcase = ({className}) => <i className={`fas fa-briefcase ${className||''}`}></i>;
-        const Activity = ({className}) => <i className={`fas fa-chart-line ${className||''}`}></i>;
-        const CalendarIcon = ({className}) => <i className={`fas fa-calendar-alt ${className||''}`}></i>;
+        const createIcon = (iconClass) => ({className}) => <i className={`${iconClass} ${className||''}`}></i>;
+        
+        const Brain = createIcon('fas fa-brain fa-fw');
+        const Star = createIcon('fas fa-star fa-fw');
+        const Heart = createIcon('fas fa-heart fa-fw');
+        const Users = createIcon('fas fa-users fa-fw');
+        const Briefcase = createIcon('fas fa-briefcase fa-fw');
+        const Activity = createIcon('fas fa-chart-line fa-fw');
+        const CalendarIcon = createIcon('fas fa-calendar-alt fa-fw');
         const CalendarDays = CalendarIcon; const Calendar = CalendarIcon;
-        const Plus = ({className}) => <i className={`fas fa-plus ${className||''}`}></i>;
-        const ChevronRight = ({className}) => <i className={`fas fa-chevron-right ${className||''}`}></i>;
-        const ChevronLeft = ({className}) => <i className={`fas fa-chevron-left ${className||''}`}></i>;
-        const ArrowRight = ({className}) => <i className={`fas fa-arrow-right ${className||''}`}></i>;
-        const Loader = ({className}) => <i className={`fas fa-spinner fa-spin ${className||''}`}></i>;
-        const Loader2 = Loader; const RefreshCw = Loader;
-        const Edit = ({className}) => <i className={`fas fa-edit ${className||''}`}></i>;
+        const Plus = createIcon('fas fa-plus fa-fw');
+        const ChevronRight = createIcon('fas fa-chevron-right fa-fw');
+        const ChevronLeft = createIcon('fas fa-chevron-left fa-fw');
+        const ArrowRight = createIcon('fas fa-arrow-right fa-fw');
+        const Loader = createIcon('fas fa-spinner fa-spin fa-fw');
+        const Loader2 = Loader; const RefreshCw = createIcon('fas fa-sync-alt fa-fw');
+        const Edit = createIcon('fas fa-edit fa-fw');
         const Edit3 = Edit;
-        const Lock = ({className}) => <i className={`fas fa-lock ${className||''}`}></i>;
-        const AlertCircle = ({className}) => <i className={`fas fa-exclamation-circle ${className||''}`}></i>;
-        const AlignLeft = ({className}) => <i className={`fas fa-align-left ${className||''}`}></i>;
-        const Grid = ({className}) => <i className={`fas fa-th ${className||''}`}></i>;
-        const Check = ({className}) => <i className={`fas fa-check ${className||''}`}></i>;
-        const CheckCircle = ({className}) => <i className={`fas fa-check-circle ${className||''}`}></i>;
+        const Lock = createIcon('fas fa-lock fa-fw');
+        const AlertCircle = createIcon('fas fa-exclamation-circle fa-fw');
+        const AlignLeft = createIcon('fas fa-align-left fa-fw');
+        const Grid = createIcon('fas fa-th fa-fw');
+        const Check = createIcon('fas fa-check fa-fw');
+        const CheckCircle = createIcon('fas fa-check-circle fa-fw');
         const CheckCircle2 = CheckCircle;
-        const Home = ({className}) => <i className={`fas fa-home ${className||''}`}></i>;
-        const List = ({className}) => <i className={`fas fa-list ${className||''}`}></i>;
-        const ListTodo = ({className}) => <i className={`fas fa-tasks ${className||''}`}></i>;
-        const MessageSquare = ({className}) => <i className={`fas fa-comment-alt ${className||''}`}></i>;
-        const Send = ({className}) => <i className={`fas fa-paper-plane ${className||''}`}></i>;
-        const Settings = ({className}) => <i className={`fas fa-cog ${className||''}`}></i>;
-        const Trash = ({className}) => <i className={`fas fa-trash ${className||''}`}></i>;
+        const Home = createIcon('fas fa-home fa-fw');
+        const List = createIcon('fas fa-list fa-fw');
+        const ListTodo = createIcon('fas fa-tasks fa-fw');
+        const MessageSquare = createIcon('fas fa-comment-alt fa-fw');
+        const Send = createIcon('fas fa-paper-plane fa-fw');
+        const Settings = createIcon('fas fa-cog fa-fw');
+        const Trash = createIcon('fas fa-trash fa-fw');
         const Trash2 = Trash;
-        const X = ({className}) => <i className={`fas fa-times ${className||''}`}></i>;
-        const LogOut = ({className}) => <i className={`fas fa-sign-out-alt ${className||''}`}></i>;
-        const Mail = ({className}) => <i className={`fas fa-envelope ${className||''}`}></i>;
-        const Key = ({className}) => <i className={`fas fa-key ${className||''}`}></i>;
-        const UserPlus = ({className}) => <i className={`fas fa-user-plus ${className||''}`}></i>;
-        const LogIn = ({className}) => <i className={`fas fa-sign-in-alt ${className||''}`}></i>;
-        const User = ({className}) => <i className={`fas fa-user ${className||''}`}></i>;
-        const Phone = ({className}) => <i className={`fas fa-phone ${className||''}`}></i>;
-        const TrendingUp = ({className}) => <i className={`fas fa-arrow-trend-up ${className||''}`}></i>;
-        const Lightbulb = ({className}) => <i className={`fas fa-lightbulb ${className||''}`}></i>;
+        const X = createIcon('fas fa-times fa-fw');
+        const LogOut = createIcon('fas fa-sign-out-alt fa-fw');
+        const Mail = createIcon('fas fa-envelope fa-fw');
+        const Key = createIcon('fas fa-key fa-fw');
+        const UserPlus = createIcon('fas fa-user-plus fa-fw');
+        const LogIn = createIcon('fas fa-sign-in-alt fa-fw');
+        const User = createIcon('fas fa-user fa-fw');
+        const Phone = createIcon('fas fa-phone fa-fw');
+        const TrendingUp = createIcon('fas fa-arrow-trend-up fa-fw');
+        const Lightbulb = createIcon('fas fa-lightbulb fa-fw');
         const Sparkles = Lightbulb;
-        const PlayCircle = ({className}) => <i className={`fas fa-play-circle ${className||''}`}></i>;
-        const BarChart = ({className}) => <i className={`fas fa-chart-bar ${className||''}`}></i>;
+        const PlayCircle = createIcon('fas fa-play-circle fa-fw');
+        const BarChart = createIcon('fas fa-chart-bar fa-fw');
         const BarChart3 = BarChart;
-        const LineChart = ({className}) => <i className={`fas fa-chart-line ${className||''}`}></i>;
-        const LayoutDashboard = ({className}) => <i className={`fas fa-tachometer-alt ${className||''}`}></i>;
-        const Mic = ({className}) => <i className={`fas fa-microphone ${className||''}`}></i>;
-        const MicOff = ({className}) => <i className={`fas fa-microphone-slash ${className||''}`}></i>;
-        const Book = ({className}) => <i className={`fas fa-book ${className||''}`}></i>;
-        const Coffee = ({className}) => <i className={`fas fa-coffee ${className||''}`}></i>;
-        const Music = ({className}) => <i className={`fas fa-music ${className||''}`}></i>;
-        const Sun = ({className}) => <i className={`fas fa-sun ${className||''}`}></i>;
-        const Moon = ({className}) => <i className={`fas fa-moon ${className||''}`}></i>;
-        const Zap = ({className}) => <i className={`fas fa-bolt ${className||''}`}></i>;
-        const Shield = ({className}) => <i className={`fas fa-shield-alt ${className||''}`}></i>;
-        const Target = ({className}) => <i className={`fas fa-bullseye ${className||''}`}></i>;
-        const Smile = ({className}) => <i className={`fas fa-smile ${className||''}`}></i>;
-        const Compass = ({className}) => <i className={`fas fa-compass ${className||''}`}></i>;
-        const Feather = ({className}) => <i className={`fas fa-feather ${className||''}`}></i>;
-        const Flame = ({className}) => <i className={`fas fa-fire ${className||''}`}></i>;
+        const LineChart = createIcon('fas fa-chart-line fa-fw');
+        const LayoutDashboard = createIcon('fas fa-tachometer-alt fa-fw');
+        const Mic = createIcon('fas fa-microphone fa-fw');
+        const MicOff = createIcon('fas fa-microphone-slash fa-fw');
+        const LinkIcon = createIcon('fas fa-link fa-fw');
+        const Book = createIcon('fas fa-book fa-fw');
+        const Coffee = createIcon('fas fa-coffee fa-fw');
+        const Music = createIcon('fas fa-music fa-fw');
+        const Sun = createIcon('fas fa-sun fa-fw');
+        const Moon = createIcon('fas fa-moon fa-fw');
+        const Zap = createIcon('fas fa-bolt fa-fw');
+        const Shield = createIcon('fas fa-shield-alt fa-fw');
+        const Target = createIcon('fas fa-bullseye fa-fw');
+        const Smile = createIcon('fas fa-smile fa-fw');
+        const Compass = createIcon('fas fa-compass fa-fw');
+        const Feather = createIcon('fas fa-feather fa-fw');
+        const Flame = createIcon('fas fa-fire fa-fw');
 
         // ==========================================
-        // 2. نظام الحماية من الانهيار (Error Boundary)
+        // 2. إعدادات قواعد البيانات فقط (تم مسح المفتاح من الكود)
+        // ==========================================
+        const myFirebaseConfig = {
+          apiKey: "AIzaSyDDokNKC3OcV2Z_dG-AqPNBd4pQzhxd5jk",
+          authDomain: "sa7efah-7d90a.firebaseapp.com",
+          projectId: "sa7efah-7d90a",
+          storageBucket: "sa7efah-7d90a.firebasestorage.app",
+          messagingSenderId: "320865055632",
+          appId: "1:320865055632:web:70917cf974ce6ba74fb915"
+        };
+
+        let app = null, auth = null, db = null;
+        const appIdStr = 'smart-journal-sa7efah';
+
+        try {
+          if (!firebase.apps.length) { app = firebase.initializeApp(myFirebaseConfig); } 
+          else { app = firebase.app(); }
+          auth = firebase.auth(); db = firebase.firestore();
+        } catch (error) { console.error("خطأ في تهيئة Firebase:", error); }
+
+        // ==========================================
+        // 3. نظام الحماية من الانهيار (Error Boundary)
         // ==========================================
         class ErrorBoundary extends Component {
           constructor(props) {
@@ -120,7 +155,7 @@
             if (this.state.hasError) {
               return (
                 <div className="flex flex-col items-center justify-center h-screen bg-slate-900 p-6 text-center" dir="rtl">
-                  <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
+                  <AlertCircle className="text-6xl text-red-500 mb-4" />
                   <h1 className="text-2xl font-bold text-red-500 mb-2">عذراً، حدث خطأ في النظام</h1>
                   <p className="text-gray-400 mb-6 text-sm max-w-sm" dir="ltr">{this.state.errorMsg}</p>
                   <button onClick={() => window.location.reload()} className="px-6 py-3 font-bold bg-red-600 text-white rounded-xl shadow-lg hover:bg-red-700">إعادة تحميل التطبيق</button>
@@ -132,7 +167,40 @@
         }
 
         // ==========================================
-        // 3. الثوابت الأساسية والإعدادات
+        // 4. استكشاف الذكاء الاصطناعي التلقائي (الذكي)
+        // ==========================================
+        const getValidGeminiModel = async (apiKey) => {
+          if (!apiKey) throw new Error("API_KEY_MISSING");
+          if (window.discoveredModelCache) return window.discoveredModelCache;
+
+          try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            const data = await res.json();
+            
+            if (data.error) throw new Error(data.error.message);
+
+            if (data.models && data.models.length > 0) {
+              const validModels = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
+              let selected = validModels.find(m => m.name === 'models/gemini-1.5-flash') ||
+                             validModels.find(m => m.name.includes("flash")) ||
+                             validModels.find(m => m.name.includes("pro")) ||
+                             validModels[0];
+              
+              if (selected) {
+                window.discoveredModelCache = selected.name.replace('models/', '');
+                return window.discoveredModelCache;
+              }
+            }
+            throw new Error("المفتاح لا يدعم توليد النصوص.");
+          } catch(e) { 
+            if (e.message === "API_KEY_MISSING") throw e;
+            console.warn("استكشاف النماذج فشل، سيتم استخدام الافتراضي.");
+            return "gemini-1.5-flash"; 
+          }
+        };
+
+        // ==========================================
+        // 5. الإعدادات ودوال الذكاء الاصطناعي
         // ==========================================
         const IconMap = { Brain, Star, Heart, Users, Briefcase, Activity, Book, Coffee, Music, Sun, Moon, Zap, Shield, Target, Smile, Compass, Feather, Flame };
         
@@ -153,65 +221,6 @@
           { id: 'social', label: 'اجتماعية', icon: 'Users', desc: '', colorObj: availableColors[3] },
           { id: 'career', label: 'وظيفية ومالية', icon: 'Briefcase', desc: '', colorObj: availableColors[4] },
         ];
-
-        // ==========================================
-        // 4. إعدادات المفاتيح وقواعد البيانات
-        // ==========================================
-        const GEMINI_API_KEY = "AIzaSyDydwtsbXdJK-LdE2g2fng6oBa0UC_sz8o"; 
-
-        const myFirebaseConfig = {
-          apiKey: "AIzaSyDDokNKC3OcV2Z_dG-AqPNBd4pQzhxd5jk",
-          authDomain: "sa7efah-7d90a.firebaseapp.com",
-          projectId: "sa7efah-7d90a",
-          storageBucket: "sa7efah-7d90a.firebasestorage.app",
-          messagingSenderId: "320865055632",
-          appId: "1:320865055632:web:70917cf974ce6ba74fb915"
-        };
-
-        const isPreviewEnv = typeof __firebase_config !== 'undefined';
-        const appIdStr = (isPreviewEnv && typeof __app_id !== 'undefined') ? __app_id : 'smart-journal-sa7efah';
-
-        let app = null, auth = null, db = null;
-
-        try {
-          const finalConfig = isPreviewEnv ? JSON.parse(__firebase_config) : myFirebaseConfig;
-          if (!firebase.apps.length) { app = firebase.initializeApp(finalConfig); } 
-          else { app = firebase.app(); }
-          auth = firebase.auth(); db = firebase.firestore();
-        } catch (error) { console.error("خطأ في تهيئة Firebase:", error); }
-
-        // ==========================================
-        // 5. استكشاف الذكاء الاصطناعي والمساعدات
-        // ==========================================
-        const getValidGeminiModel = async () => {
-          if (window.discoveredModelCache) return window.discoveredModelCache;
-
-          try {
-            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
-            const data = await res.json();
-            
-            if (data.error) throw new Error(data.error.message);
-
-            if (data.models && data.models.length > 0) {
-              const validModels = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
-              
-              let selected = validModels.find(m => m.name === 'models/gemini-1.5-flash') ||
-                             validModels.find(m => m.name.includes("flash")) ||
-                             validModels.find(m => m.name.includes("pro")) ||
-                             validModels[0];
-              
-              if (selected) {
-                window.discoveredModelCache = selected.name.replace('models/', '');
-                console.log("تم اكتشاف المحرك المتوافق:", window.discoveredModelCache);
-                return window.discoveredModelCache;
-              }
-            }
-            throw new Error("لا توجد نماذج مدعومة في المفتاح.");
-          } catch(e) { 
-            console.error("فشل الاستكشاف:", e);
-            return "gemini-1.5-flash"; 
-          }
-        };
 
         const cleanJSONString = (str) => {
           if (!str) return "";
@@ -241,9 +250,10 @@
           throw lastError;
         };
 
-        const analyzeJournalWithAI = async (combinedText, audioData, recentEntries, criteria) => {
-          const modelName = await getValidGeminiModel();
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+        const analyzeJournalWithAI = async (combinedText, audioData, recentEntries, criteria, apiKey) => {
+          if (!apiKey) throw new Error("API_KEY_MISSING");
+          const modelName = await getValidGeminiModel(apiKey);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
           
           let recentContext = "لا توجد سجلات سابقة للمقارنة.";
           if (recentEntries && recentEntries.length > 0) {
@@ -269,7 +279,7 @@
 
           const systemPrompt = `أنت محلل حياة. حلل يوميات المستخدم. 
 اللقب: 4 كلمات كحد أقصى.
-المهام: استخرجها جميعاً.
+المهام: استخرجها جميعاً كمصفوفة نصوص.
 التقييم: 0-10 لكل معيار مع تبرير بسطر واحد.
 ${recentContext}\n${criteriaPrompt}`;
 
@@ -288,12 +298,13 @@ ${recentContext}\n${criteriaPrompt}`;
           return await fetchWithRetry(url, payload);
         };
 
-        const chatWithJournalAI = async (currentEntry, chatHistory, userMessage, criteria) => {
-          const modelName = await getValidGeminiModel();
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+        const chatWithJournalAI = async (currentEntry, chatHistory, userMessage, criteria, apiKey) => {
+          if (!apiKey) throw new Error("API_KEY_MISSING");
+          const modelName = await getValidGeminiModel(apiKey);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
           const historyContext = chatHistory.map(msg => `${msg.sender === 'user' ? 'المستخدم' : 'الذكاء الاصطناعي'}: ${msg.text}`).join('\n');
           let scoresContext = criteria.map(c => `${c.label}(${currentEntry.scores?.[c.id] || 0})`).join(', ');
-          const entryContext = `اللقب الحالي: ${currentEntry.title}\nالمهام: ${(currentEntry.tasks || []).join('، ')}\nالتقييمات: ${scoresContext}`;
+          const entryContext = `اللقب الحالي: ${currentEntry.title}\nالمهام الحالية: ${(currentEntry.tasks || []).join('، ')}\nالتقييمات الحالية: ${scoresContext}`;
 
           let dynamicProperties = { 
             reply: { type: "STRING" }, title: { type: "STRING" },
@@ -309,9 +320,10 @@ ${recentContext}\n${criteriaPrompt}`;
           return await fetchWithRetry(url, payload);
         };
 
-        const generateDashboardInsightsAI = async (entries, criteria) => {
-          const modelName = await getValidGeminiModel();
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+        const generateDashboardInsightsAI = async (entries, criteria, apiKey) => {
+          if (!apiKey) throw new Error("API_KEY_MISSING");
+          const modelName = await getValidGeminiModel(apiKey);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
           const entriesSummary = entries.map(e => `[${e.date}]: اللقب(${e.title}), المهام(${e.tasks?.join('، ') || 'لا يوجد'})`).join('\n').substring(0, 15000);
 
           let dynamicProperties = { overallTitle: { type: "STRING" } };
@@ -326,9 +338,10 @@ ${recentContext}\n${criteriaPrompt}`;
           return await fetchWithRetry(url, payload);
         };
 
-        const generateMonthlyTitleAI = async (entriesText) => {
-          const modelName = await getValidGeminiModel();
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+        const generateMonthlyTitleAI = async (entriesText, apiKey) => {
+          if (!apiKey) throw new Error("API_KEY_MISSING");
+          const modelName = await getValidGeminiModel(apiKey);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
           const payload = {
             contents: [{ role: "user", parts: [{ text: `استخرج لقباً يصف هذا الشهر (4 كلمات كحد أقصى):\n${entriesText}` }] }],
             generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { monthlyTitle: { type: "STRING" } }, required: ["monthlyTitle"] } }
@@ -373,7 +386,7 @@ ${recentContext}\n${criteriaPrompt}`;
         };
 
         // ==========================================
-        // 6. مكونات الرسوم البيانية المتطورة
+        // 6. الرسوم البيانية المتطورة
         // ==========================================
         const BarChartComponent = ({ data, onBarClick }) => {
           return (
@@ -490,7 +503,7 @@ ${recentContext}\n${criteriaPrompt}`;
               <div className="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-32 bg-slate-900 rounded-b-[3rem] z-0"></div>
                 <div className="relative z-10 flex flex-col items-center mb-8 pt-4">
-                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg mb-4 border-4 border-slate-50"><Brain className="w-10 h-10 text-blue-600" /></div>
+                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg mb-4 border-4 border-slate-50"><Brain className="text-4xl text-blue-600" /></div>
                   <h1 className="text-2xl font-black text-gray-800">يومياتي الذكية</h1>
                   <p className="text-sm text-gray-500 font-medium mt-1">حلل يومك، طوّر ذاتك</p>
                 </div>
@@ -500,31 +513,31 @@ ${recentContext}\n${criteriaPrompt}`;
                     <>
                       <div>
                         <div className="relative">
-                          <User className="w-5 h-5 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                          <User className="text-lg text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" />
                           <input type="text" value={name} onChange={e=>setName(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="الاسم الكامل" />
                         </div>
                       </div>
                       <div>
                         <div className="relative">
-                          <Phone className="w-5 h-5 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                          <Phone className="text-lg text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" />
                           <input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="05XXXXXXXX" dir="ltr" />
                         </div>
                       </div>
                     </>
                   )}
                   <div>
-                    <div className="relative"><Mail className="w-5 h-5 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" /><input type="email" value={email} onChange={e=>setEmail(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="البريد الإلكتروني" /></div>
+                    <div className="relative"><Mail className="text-lg text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" /><input type="email" value={email} onChange={e=>setEmail(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="البريد الإلكتروني" /></div>
                   </div>
                   <div>
-                    <div className="relative"><Key className="w-5 h-5 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" /><input type="password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="كلمة المرور" /></div>
+                    <div className="relative"><Key className="text-lg text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" /><input type="password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="كلمة المرور" /></div>
                   </div>
                   <div className="flex items-center gap-2 mt-1">
                     <input type="checkbox" id="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer" />
                     <label htmlFor="rememberMe" className="text-xs font-bold text-gray-600 cursor-pointer select-none">تذكرني (البقاء متصلاً)</label>
                   </div>
-                  {error && <div className="text-red-600 text-xs font-bold bg-red-50 p-3 rounded-lg flex items-start gap-2"><AlertCircle className="w-4 h-4 shrink-0" />{error}</div>}
+                  {error && <div className="text-red-600 text-xs font-bold bg-red-50 p-3 rounded-lg flex items-start gap-2"><AlertCircle className="text-sm shrink-0 mt-0.5" />{error}</div>}
                   <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white font-bold text-lg rounded-xl py-3.5 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition mt-2 flex justify-center items-center gap-2">
-                    {loading ? <Loader className="w-5 h-5 animate-spin" /> : (isLogin ? <><LogIn className="w-5 h-5"/> تسجيل الدخول</> : <><UserPlus className="w-5 h-5"/> إنشاء حساب</>)}
+                    {loading ? <Loader className="text-lg animate-spin" /> : (isLogin ? <><LogIn className="text-lg"/> تسجيل الدخول</> : <><UserPlus className="text-lg"/> إنشاء حساب</>)}
                   </button>
                 </form>
                 <div className="mt-6 flex flex-col gap-4 relative z-10">
@@ -567,9 +580,9 @@ ${recentContext}\n${criteriaPrompt}`;
           return (
             <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
               <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem] flex justify-between items-center sticky top-0 z-20">
-                <button onClick={goToDashboard} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ArrowRight className="w-5 h-5 text-gray-700" /></button>
+                <button onClick={goToDashboard} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ArrowRight className="text-lg text-gray-700" /></button>
                 <h1 className="text-xl font-black text-gray-800">الإعدادات</h1>
-                <button onClick={handleLogout} className="p-2 bg-red-50 text-red-600 rounded-full hover:bg-red-100" title="تسجيل الخروج"><LogOut className="w-5 h-5" /></button>
+                <button onClick={handleLogout} className="p-2 bg-red-50 text-red-600 rounded-full hover:bg-red-100" title="تسجيل الخروج"><LogOut className="text-lg" /></button>
               </header>
 
               <div className="p-5">
@@ -583,7 +596,7 @@ ${recentContext}\n${criteriaPrompt}`;
                           const IconComp = IconMap[iconName];
                           return (
                             <button key={iconName} onClick={() => setFormData({...formData, icon: iconName})} className={`p-3 rounded-xl border shrink-0 transition-all ${formData.icon === iconName ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-gray-50 border-transparent text-gray-400 hover:bg-gray-100'}`}>
-                              <IconComp className="w-6 h-6" />
+                              <IconComp className="text-xl" />
                             </button>
                           )
                         })}
@@ -611,15 +624,15 @@ ${recentContext}\n${criteriaPrompt}`;
                     return (
                       <div key={c.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`p-2 rounded-xl ${c.colorObj.main}`}><IconComp className="w-5 h-5 text-white" /></div>
+                          <div className={`w-10 h-10 flex items-center justify-center rounded-xl ${c.colorObj.main}`}><IconComp className="text-base text-white" /></div>
                           <div>
                             <h4 className="font-bold text-gray-800 text-sm">{c.label}</h4>
                             {c.desc && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[150px]">{c.desc}</p>}
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <button onClick={() => handleEdit(c)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><Edit className="w-4 h-4" /></button>
-                          <button onClick={() => handleDelete(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash className="w-4 h-4" /></button>
+                          <button onClick={() => handleEdit(c)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><Edit className="text-sm" /></button>
+                          <button onClick={() => handleDelete(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash className="text-sm" /></button>
                         </div>
                       </div>
                     )
@@ -630,7 +643,7 @@ ${recentContext}\n${criteriaPrompt}`;
           );
         };
 
-        const DashboardView = ({ entries, criteria, goToCalendar, goToYear, goToSettings }) => {
+        const DashboardView = ({ entries, criteria, globalApiKey, goToCalendar, goToYear, goToSettings }) => {
           const [dashboardFilter, setDashboardFilter] = useState('40days');
           const [insights, setInsights] = useState(null);
           const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
@@ -673,24 +686,25 @@ ${recentContext}\n${criteriaPrompt}`;
 
           useEffect(() => {
             let isMounted = true;
-            if (filteredEntries.length === 0) { setInsights(null); return; }
+            if (filteredEntries.length === 0 || !globalApiKey) { setInsights(null); return; }
+            
             const fetchInsights = async () => {
               setIsGeneratingInsights(true);
               try { 
-                const res = await generateDashboardInsightsAI(filteredEntries, criteria); 
+                const res = await generateDashboardInsightsAI(filteredEntries, criteria, globalApiKey); 
                 if (isMounted && res) setInsights(res); 
               } catch(e) { } 
               finally { if(isMounted) setIsGeneratingInsights(false); }
             };
             fetchInsights();
             return () => { isMounted = false; };
-          }, [dashboardFilter, filteredEntries, criteria]);
+          }, [dashboardFilter, filteredEntries, criteria, globalApiKey]);
 
           return (
             <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-32">
               <header className="bg-slate-900 text-white p-6 pb-8 shadow-xl rounded-b-[2.5rem] relative overflow-hidden">
                 <div className="flex justify-between items-center mb-6 relative z-10">
-                  <h1 className="text-xl font-extrabold flex items-center gap-2"><LayoutDashboard className="w-6 h-6 text-blue-400" /> إحصائياتي</h1>
+                  <h1 className="text-xl font-extrabold flex items-center gap-2"><LayoutDashboard className="text-xl text-blue-400" /> إحصائياتي</h1>
                   <div className="flex gap-2">
                     <select value={dashboardFilter} onChange={(e) => setDashboardFilter(e.target.value)} className="bg-white/10 text-white text-sm border border-white/20 outline-none focus:ring-2 focus:ring-blue-400 rounded-xl px-2 py-2 font-medium">
                       <option value="40days" className="text-gray-800">40 يوم</option>
@@ -698,8 +712,8 @@ ${recentContext}\n${criteriaPrompt}`;
                       <option value="year" className="text-gray-800">السنة</option>
                       <option value="all" className="text-gray-800">الكل</option>
                     </select>
-                    <button onClick={goToSettings} className="p-2 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition">
-                      <Settings className="w-5 h-5 text-white" />
+                    <button onClick={goToSettings} className="p-2 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition relative">
+                      <Settings className="text-lg text-white" />
                     </button>
                   </div>
                 </div>
@@ -709,10 +723,10 @@ ${recentContext}\n${criteriaPrompt}`;
                 ) : (
                   <div className="flex flex-col gap-6 relative z-10">
                     <div className="flex justify-between items-center">
-                      <div className="flex-1">
+                      <div className="flex-1 pr-2">
                         <p className="text-white/60 text-xs font-bold uppercase mb-1">اللقب العام</p>
                         <h2 className="text-2xl font-black text-white leading-tight">
-                          {insights?.overallTitle || (isGeneratingInsights ? <Loader className="w-5 h-5 animate-spin inline" /> : "مُنجز")}
+                          {!globalApiKey ? "جاري الإعداد..." : (insights?.overallTitle || (isGeneratingInsights ? <Loader className="text-xl animate-spin inline" /> : "مُنجز"))}
                         </h2>
                       </div>
                       <div className="text-center bg-white/10 p-3 rounded-2xl border border-white/10 min-w-[80px]">
@@ -721,7 +735,7 @@ ${recentContext}\n${criteriaPrompt}`;
                       </div>
                     </div>
                     <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4">
-                      <div className="p-3 bg-blue-500/20 rounded-xl"><ListTodo className="w-6 h-6 text-blue-300" /></div>
+                      <div className="p-3 bg-blue-500/20 rounded-xl"><ListTodo className="text-xl text-blue-300" /></div>
                       <div><div className="text-3xl font-black text-white">{stats.totalTasks}</div><div className="text-xs text-white/60 font-bold uppercase">مهمة وعمل منجز</div></div>
                     </div>
                   </div>
@@ -731,16 +745,25 @@ ${recentContext}\n${criteriaPrompt}`;
               <div className="px-5 mt-6 flex flex-col gap-6 relative z-10">
                 <div className="grid grid-cols-2 gap-3">
                   <button onClick={goToCalendar} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 hover:bg-blue-50 active:scale-95 transition">
-                    <CalendarDays className="w-7 h-7 text-blue-500" /><span className="font-bold text-gray-700 text-sm">عرض الأيام</span>
+                    <CalendarDays className="text-2xl text-blue-500" /><span className="font-bold text-gray-700 text-sm">عرض الأيام</span>
                   </button>
                   <button onClick={goToYear} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 hover:bg-blue-50 active:scale-95 transition">
-                    <Calendar className="w-7 h-7 text-purple-500" /><span className="font-bold text-gray-700 text-sm">عرض الشهور</span>
+                    <Calendar className="text-2xl text-purple-500" /><span className="font-bold text-gray-700 text-sm">عرض الشهور</span>
                   </button>
                 </div>
 
+                {!globalApiKey && (
+                   <div className="bg-amber-50 p-4 rounded-2xl flex items-center justify-between border border-amber-200">
+                      <div className="flex items-center gap-3 text-amber-800">
+                         <AlertCircle className="text-xl" />
+                         <span className="text-sm font-bold">مفتاح الذكاء الاصطناعي مفقود!</span>
+                      </div>
+                   </div>
+                )}
+
                 {filteredEntries.length > 0 && (
                   <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
-                    <h3 className="text-gray-800 font-black text-lg mb-6 flex items-center gap-2"><Activity className="w-5 h-5 text-blue-500" /> التحليل العام</h3>
+                    <h3 className="text-gray-800 font-black text-lg mb-6 flex items-center gap-2"><Activity className="text-lg text-blue-500" /> التحليل العام</h3>
                     <div className="flex flex-col gap-8">
                       {criteria.map(cat => {
                         const IconComp = IconMap[cat.icon] || Star;
@@ -748,7 +771,7 @@ ${recentContext}\n${criteriaPrompt}`;
                         return (
                           <div key={cat.id} className="relative">
                             <div className="flex items-center gap-3 mb-2">
-                              <div className={`p-2 rounded-xl shadow-md ${cat.colorObj.main}`}><IconComp className="w-5 h-5 text-white" /></div>
+                              <div className={`w-10 h-10 flex items-center justify-center rounded-xl shadow-md ${cat.colorObj.main}`}><IconComp className="text-base text-white" /></div>
                               <div className="flex-1 flex justify-between items-end">
                                 <span className="font-bold text-gray-700">{cat.label}</span>
                                 <span className={`font-black text-lg text-gray-900`}>{score}/10</span>
@@ -758,7 +781,7 @@ ${recentContext}\n${criteriaPrompt}`;
                               <div className={`h-full ${cat.colorObj.main} rounded-full transition-all duration-1000`} style={{ width: `${(parseFloat(score) / 10) * 100}%` }}></div>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-2xl text-sm leading-relaxed text-gray-600 font-medium border border-gray-100">
-                               {isGeneratingInsights ? <Loader className="w-4 h-4 animate-spin text-gray-400"/> : (insights?.[`advice_${cat.id}`] || "الذكاء الاصطناعي يحلل بياناتك.")}
+                               {!globalApiKey ? "الذكاء الاصطناعي قيد التجهيز..." : (isGeneratingInsights ? <Loader className="text-sm animate-spin text-gray-400"/> : (insights?.[`advice_${cat.id}`] || "الذكاء الاصطناعي يحلل بياناتك."))}
                             </div>
                           </div>
                         )
@@ -813,9 +836,9 @@ ${recentContext}\n${criteriaPrompt}`;
             <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
               <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
                 <div className="flex justify-between items-center mb-4">
-                  <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="w-5 h-5" /></button>
+                  <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="text-lg" /></button>
                   <h1 className="text-xl font-extrabold text-gray-800">{monthNames[month]} {year}</h1>
-                  <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="w-5 h-5" /></button>
+                  <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="text-lg" /></button>
                 </div>
                 <div className="text-center"><p className="text-gray-400 text-xs font-bold uppercase">اللقب</p><h2 className="text-lg font-bold text-gray-800 truncate">{mTitle}</h2></div>
               </header>
@@ -823,13 +846,13 @@ ${recentContext}\n${criteriaPrompt}`;
               <div className="px-5 mt-6 mb-6">
                 <div className="flex justify-between items-center mb-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
                   <button onClick={goToDashboard} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition font-bold text-sm shrink-0">
-                    <Home className="w-4 h-4" /> الرئيسية
+                    <Home className="text-sm" /> الرئيسية
                   </button>
                   <div className="flex gap-1 flex-1 justify-center mx-2 shrink-0">
-                    <button onClick={() => setCalendarMode('grid')} className={`p-2 rounded-xl transition ${calendarMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="w-5 h-5" /></button>
-                    <button onClick={() => setCalendarMode('list')} className={`p-2 rounded-xl transition ${calendarMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="w-5 h-5" /></button>
-                    <button onClick={() => setCalendarMode('bar')} className={`p-2 rounded-xl transition ${calendarMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="w-5 h-5" /></button>
-                    <button onClick={() => setCalendarMode('line')} className={`p-2 rounded-xl transition ${calendarMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="w-5 h-5" /></button>
+                    <button onClick={() => setCalendarMode('grid')} className={`p-2 rounded-xl transition ${calendarMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="text-lg" /></button>
+                    <button onClick={() => setCalendarMode('list')} className={`p-2 rounded-xl transition ${calendarMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="text-lg" /></button>
+                    <button onClick={() => setCalendarMode('bar')} className={`p-2 rounded-xl transition ${calendarMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="text-lg" /></button>
+                    <button onClick={() => setCalendarMode('line')} className={`p-2 rounded-xl transition ${calendarMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="text-lg" /></button>
                   </div>
                   
                   {calendarMode === 'list' && (
@@ -941,22 +964,22 @@ ${recentContext}\n${criteriaPrompt}`;
             <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
                <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
                 <div className="flex justify-between items-center mb-4">
-                  <button onClick={() => setCurrentYear(currentYear - 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="w-5 h-5" /></button>
+                  <button onClick={() => setCurrentYear(currentYear - 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="text-lg" /></button>
                   <h1 className="text-xl font-extrabold text-gray-800">سنة {currentYear}</h1>
-                  <button onClick={() => setCurrentYear(currentYear + 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="w-5 h-5" /></button>
+                  <button onClick={() => setCurrentYear(currentYear + 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="text-lg" /></button>
                 </div>
               </header>
 
               <div className="px-5 mt-6 mb-6">
                 <div className="flex justify-between items-center mb-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
                   <button onClick={goToDashboard} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition font-bold text-sm shrink-0">
-                    <Home className="w-4 h-4" /> الرئيسية
+                    <Home className="text-sm" /> الرئيسية
                   </button>
                   <div className="flex gap-1 flex-1 justify-center mx-2 shrink-0">
-                    <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl transition ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="w-5 h-5" /></button>
-                    <button onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="w-5 h-5" /></button>
-                    <button onClick={() => setViewMode('bar')} className={`p-2 rounded-xl transition ${viewMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="w-5 h-5" /></button>
-                    <button onClick={() => setViewMode('line')} className={`p-2 rounded-xl transition ${viewMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="w-5 h-5" /></button>
+                    <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl transition ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="text-lg" /></button>
+                    <button onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="text-lg" /></button>
+                    <button onClick={() => setViewMode('bar')} className={`p-2 rounded-xl transition ${viewMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="text-lg" /></button>
+                    <button onClick={() => setViewMode('line')} className={`p-2 rounded-xl transition ${viewMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="text-lg" /></button>
                   </div>
                   {viewMode === 'list' && (
                     <select value={yearSortOption} onChange={(e) => setYearSortOption(e.target.value)} className="bg-gray-50 text-xs border-none outline-none focus:ring-2 focus:ring-blue-100 rounded-xl px-2 py-2 text-gray-600 font-bold max-w-[100px] shrink-0">
@@ -1007,7 +1030,7 @@ ${recentContext}\n${criteriaPrompt}`;
           );
         };
 
-        const EntryFormView = ({ selectedDate, setSelectedDate, entries, criteria, saveEntry, goToCalendar, goToDetails }) => {
+        const EntryFormView = ({ selectedDate, setSelectedDate, entries, criteria, saveEntry, goToCalendar, goToDetails, globalApiKey }) => {
           const [transcript, setTranscript] = useState("");
           const [isRecording, setIsRecording] = useState(false);
           const [recordingTime, setRecordingTime] = useState(0);
@@ -1050,7 +1073,7 @@ ${recentContext}\n${criteriaPrompt}`;
           }, []);
 
           const toggleRecording = async () => {
-            if (!recognitionRef.current) return setError("المتصفح لا يدعم التسجيل. استخدم الكتابة.");
+            if (!recognitionRef.current) return setError("المتصفح لا يدعم التسجيل المباشر. استخدم الكتابة.");
             if (isRecording) {
               if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') mediaRecorderRef.current.stop();
               if (recognitionRef.current) recognitionRef.current.stop();
@@ -1095,8 +1118,8 @@ ${recentContext}\n${criteriaPrompt}`;
           const handleAnalyze = async () => {
             if (!transcript.trim() && !audioData) return setError("الرجاء إدخال نص أو تسجيل مقطع صوتي.");
             
-            if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === "") {
-                return setError("عذراً، يرجى إعداد مفتاح الذكاء الاصطناعي (API Key) في الكود لكي تعمل هذه الميزة.");
+            if (!globalApiKey || globalApiKey.trim() === "") {
+                return setError("يجب التأكد من صحة مفتاح الذكاء الاصطناعي العام.");
             }
 
             setIsAnalyzing(true); setError(null);
@@ -1108,7 +1131,7 @@ ${recentContext}\n${criteriaPrompt}`;
               const existingText = entries[selectedDate]?.text || "";
               const combinedTextForAI = existingText ? `[الأحداث السابقة]:\n${existingText}\n\n[إضافات جديدة]:\n${transcript}` : transcript;
 
-              const aiResult = await analyzeJournalWithAI(combinedTextForAI, audioData, recentEntries, criteria);
+              const aiResult = await analyzeJournalWithAI(combinedTextForAI, audioData, recentEntries, criteria, globalApiKey);
               
               let scoresObj = {}, detailsObj = {};
               criteria.forEach(c => {
@@ -1135,7 +1158,7 @@ ${recentContext}\n${criteriaPrompt}`;
           if (isExpired) {
             return (
               <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
-                <Lock className="w-16 h-16 text-gray-400 mb-4 mx-auto" />
+                <Lock className="text-6xl text-gray-400 mb-4 mx-auto" />
                 <h2 className="text-xl font-bold text-gray-800 mb-6">انتهى وقت التعديل</h2>
                 <button onClick={() => goToDetails(selectedDate)} className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/30">عرض اليوميات</button>
               </div>
@@ -1153,7 +1176,7 @@ ${recentContext}\n${criteriaPrompt}`;
           return (
             <div className="flex-1 overflow-y-auto bg-slate-50 relative flex flex-col pb-10">
               <header className="bg-white p-4 shadow-sm flex items-center justify-between border-b border-gray-100 shrink-0">
-                <button onClick={goToCalendar} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ArrowRight className="w-5 h-5" /></button>
+                <button onClick={goToCalendar} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ArrowRight className="text-lg" /></button>
                 <div className="flex flex-col items-center bg-gray-50 px-4 py-1.5 rounded-xl border border-gray-200">
                    <label className="text-[10px] font-bold text-gray-400 uppercase">تاريخ اليوميات</label>
                    <input type="date" value={selectedDate} onChange={handleDateChange} className="bg-transparent text-sm border-none outline-none font-black text-blue-600 cursor-pointer" />
@@ -1173,7 +1196,7 @@ ${recentContext}\n${criteriaPrompt}`;
                   {isRecording && <div className="absolute top-1/3 flex items-center justify-center pointer-events-none opacity-20"><div className="w-40 h-40 bg-red-500 rounded-full animate-ping absolute"></div></div>}
                   
                   <button onClick={toggleRecording} className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 shadow-xl shrink-0 mt-8 ${isRecording ? 'bg-red-500 text-white scale-110' : 'bg-slate-900 text-white hover:bg-slate-800 hover:scale-105'}`}>
-                    {isRecording ? <MicOff className="w-10 h-10" /> : <Mic className="w-10 h-10" />}
+                    {isRecording ? <MicOff className="text-4xl" /> : <Mic className="text-4xl" />}
                   </button>
                   
                   <p className="mt-4 text-gray-400 font-bold text-sm z-10 shrink-0">
@@ -1183,26 +1206,36 @@ ${recentContext}\n${criteriaPrompt}`;
                   {audioData && !isRecording && (
                     <div className="mt-4 w-full bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <PlayCircle className="w-8 h-8 text-blue-500" />
+                        <PlayCircle className="text-3xl text-blue-500" />
                         <div><p className="text-sm font-bold text-blue-900">مقطع صوتي جاهز</p><p className="text-xs text-blue-600">سيتم تفريغه وتحليله تلقائياً</p></div>
                       </div>
-                      <button onClick={() => setAudioData(null)} className="p-2 text-red-500 hover:bg-red-100 rounded-xl transition"><Trash className="w-5 h-5"/></button>
+                      <button onClick={() => setAudioData(null)} className="p-2 text-red-500 hover:bg-red-100 rounded-xl transition"><Trash className="text-lg"/></button>
                     </div>
                   )}
 
                   <textarea value={transcript} onChange={(e) => setTranscript(e.target.value)} placeholder="أضف تفاصيل اليوم هنا..." className="mt-6 w-full flex-1 bg-slate-50 rounded-2xl p-5 text-gray-700 resize-none border-none focus:ring-2 focus:ring-blue-100 z-10 text-base leading-relaxed font-medium shadow-inner" />
                 </div>
                 
-                {error && <div className="bg-red-50 p-4 rounded-2xl flex gap-3 shrink-0"><AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" /><div><p className="text-red-700 text-sm font-bold">تنبيه</p><p className="text-red-600 text-xs font-medium" dir="ltr">{error}</p></div></div>}
+                {error && (
+                  <div className="bg-red-50 p-4 rounded-2xl flex flex-col gap-2 shrink-0 border border-red-100">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="text-lg text-red-500 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-red-700 text-sm font-bold mb-1">تنبيه</p>
+                        <p className="text-red-600 text-xs font-medium leading-relaxed">{error}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 
                 <button onClick={handleAnalyze} disabled={isAnalyzing || (!transcript.trim() && !audioData)} className="bg-blue-600 text-white w-full py-5 rounded-2xl font-black text-lg flex justify-center gap-2 shadow-xl shadow-blue-500/50 disabled:opacity-50 hover:bg-blue-700 shrink-0">
-                  {isAnalyzing ? <><Loader className="w-6 h-6 animate-spin" /> جاري التحليل والإضافة...</> : (error ? <><AlertCircle className="w-5 h-5"/> إعادة المحاولة</> : 'حفظ وتحليل')}
+                  {isAnalyzing ? <><Loader className="text-xl animate-spin" /> جاري التحليل والإضافة...</> : (error && globalApiKey ? <><RefreshCw className="text-lg"/> إعادة المحاولة</> : 'حفظ وتحليل')}
                 </button>
 
                 {entries?.[selectedDate]?.tasks && entries[selectedDate].tasks.length > 0 && (
                   <div className="bg-indigo-50 p-5 rounded-3xl border border-indigo-100 shadow-sm shrink-0 mt-2">
                     <h3 className="text-indigo-800 font-black text-sm mb-3 flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" /> أحداث تم تسجيلها سابقاً اليوم:
+                      <CheckCircle className="text-sm" /> أحداث تم تسجيلها سابقاً اليوم:
                     </h3>
                     <ul className="space-y-2">
                       {entries[selectedDate].tasks.map((task, idx) => (
@@ -1219,11 +1252,12 @@ ${recentContext}\n${criteriaPrompt}`;
           );
         };
 
-        const EntryDetailsView = ({ selectedDate, entries, criteria, goToCalendar, goToForm, updateEntryData }) => {
+        const EntryDetailsView = ({ selectedDate, entries, criteria, goToCalendar, goToForm, updateEntryData, globalApiKey }) => {
           const entry = entries?.[selectedDate];
           const [chatInput, setChatInput] = useState("");
           const [isChatting, setIsChatting] = useState(false);
           const [isDeletingTasks, setIsDeletingTasks] = useState(false);
+          const [tempTasks, setTempTasks] = useState([]); 
           const chatEndRef = useRef(null);
           const topRef = useRef(null);
           const prevChatLength = useRef(entry?.chatHistory?.length || 0);
@@ -1240,9 +1274,13 @@ ${recentContext}\n${criteriaPrompt}`;
           if (!entry) return <div className="p-6 text-center mt-20 font-bold">لا يوجد سجل متاح</div>;
 
           const { scores = {}, categoryDetails = {}, tasks = [], title = "بدون لقب", averageScore = "0.0", chatHistory = [], comparison = "", tips = "" } = entry;
+          const safeTasks = Array.isArray(tasks) ? tasks : []; 
+          const displayTasks = isDeletingTasks ? tempTasks : safeTasks; 
 
           const handleSendMessage = async () => {
             if (!chatInput.trim()) return;
+            if (!globalApiKey) { alert("المفتاح العام غير متوفر."); return; }
+            
             const userMsg = chatInput;
             setChatInput("");
             
@@ -1251,7 +1289,7 @@ ${recentContext}\n${criteriaPrompt}`;
             
             setIsChatting(true);
             try {
-              const aiResponse = await chatWithJournalAI(entry, updatedHistory, userMsg, criteria);
+              const aiResponse = await chatWithJournalAI(entry, updatedHistory, userMsg, criteria, globalApiKey);
               const finalHistory = [...updatedHistory, { sender: 'ai', text: aiResponse.reply || "تم التحديث بنجاح." }];
               
               let newScores = { ...scores };
@@ -1268,20 +1306,21 @@ ${recentContext}\n${criteriaPrompt}`;
             } finally { setIsChatting(false); }
           };
 
-          const removeTask = (indexToRemove) => {
-            const newTasks = tasks.filter((_, i) => i !== indexToRemove);
-            updateEntryData(selectedDate, { tasks: newTasks });
-          };
+          const startEditingTasks = () => { setTempTasks([...safeTasks]); setIsDeletingTasks(true); };
+          const confirmTaskChanges = () => { updateEntryData(selectedDate, { tasks: tempTasks }); setIsDeletingTasks(false); };
+          const cancelTaskChanges = () => { setIsDeletingTasks(false); setTempTasks([]); };
+          const removeTempTask = (indexToRemove) => { setTempTasks(tempTasks.filter((_, i) => i !== indexToRemove)); };
+          const removeAllTempTasks = () => { setTempTasks([]); };
 
           return (
             <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
               <div ref={topRef} />
               <header className={`${getColorClass(averageScore)} p-6 pt-8 rounded-b-[3rem] shadow-xl text-center relative z-20`}>
                 <div className="flex justify-between mb-4">
-                   <button onClick={goToCalendar} className="p-2 bg-black/10 rounded-full hover:bg-black/20 text-white"><ArrowRight className="w-6 h-6" /></button>
+                   <button onClick={goToCalendar} className="p-2 bg-black/10 rounded-full hover:bg-black/20 text-white"><ArrowRight className="text-xl" /></button>
                    <div className="flex gap-2">
                      <button onClick={() => goToForm(selectedDate)} className="p-2 bg-black/10 rounded-full hover:bg-black/20 text-white" title="إضافة لليوم">
-                       <Plus className="w-5 h-5" />
+                       <Plus className="text-xl" />
                      </button>
                    </div>
                 </div>
@@ -1294,19 +1333,30 @@ ${recentContext}\n${criteriaPrompt}`;
                 <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 pt-10">
                   <div className="flex justify-between items-center mb-4">
                      <div className="flex items-center gap-3">
-                       <h3 className="text-gray-800 font-black text-lg flex items-center gap-2"><CheckCircle className="w-5 h-5 text-blue-500"/> ملخص الإنجازات</h3>
-                       <button onClick={() => setIsDeletingTasks(!isDeletingTasks)} className={`p-1.5 rounded-lg transition-colors ${isDeletingTasks ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500 hover:bg-red-100'}`} title="تعديل المهام">
-                         {isDeletingTasks ? <Check className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
-                       </button>
+                       <h3 className="text-gray-800 font-black text-lg flex items-center gap-2"><CheckCircle className="text-xl text-blue-500"/> ملخص الإنجازات</h3>
+                       
+                       {!isDeletingTasks ? (
+                         <button onClick={startEditingTasks} className="p-1.5 bg-red-50 text-red-500 hover:bg-red-100 rounded-lg transition-colors" title="تعديل المهام">
+                           <Trash2 className="text-sm" />
+                         </button>
+                       ) : (
+                         <div className="flex items-center gap-1.5">
+                           <button onClick={confirmTaskChanges} className="p-1.5 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-colors" title="تأكيد الحفظ"><Check className="text-sm" /></button>
+                           <button onClick={cancelTaskChanges} className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors" title="إلغاء التعديلات"><X className="text-sm" /></button>
+                           <button onClick={removeAllTempTasks} className="px-2 py-1.5 bg-red-100 text-red-600 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors">حذف الكل</button>
+                         </div>
+                       )}
+
                      </div>
-                     <div className="bg-blue-50 text-blue-600 font-black px-3 py-1 rounded-lg text-sm">{Array.isArray(tasks) ? tasks.length : 0} مهام</div>
+                     <div className="bg-blue-50 text-blue-600 font-black px-3 py-1 rounded-lg text-sm">{displayTasks.length} مهام</div>
                   </div>
-                  {Array.isArray(tasks) && tasks.length > 0 ? (
+                  
+                  {displayTasks.length > 0 ? (
                     <ul className="space-y-3">
-                      {tasks.map((task, idx) => (
+                      {displayTasks.map((task, idx) => (
                         <li key={idx} className="flex items-start gap-3 bg-gray-50 p-3 rounded-2xl border border-gray-100">
                           {isDeletingTasks ? (
-                             <button onClick={() => removeTask(idx)} className="w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center shrink-0 hover:bg-red-200 transition-colors"><X className="w-4 h-4" /></button>
+                             <button onClick={() => removeTempTask(idx)} className="w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center shrink-0 hover:bg-red-200 transition-colors"><X className="text-xs" /></button>
                           ) : (
                              <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-xs font-bold text-gray-400 shrink-0 border border-gray-200">{idx+1}</span>
                           )}
@@ -1318,14 +1368,14 @@ ${recentContext}\n${criteriaPrompt}`;
                 </div>
 
                 <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                  <h3 className="text-gray-800 font-black text-lg mb-5 flex items-center gap-2"><Activity className="w-5 h-5 text-blue-500" /> التحليل التفصيلي</h3>
+                  <h3 className="text-gray-800 font-black text-lg mb-5 flex items-center gap-2"><Activity className="text-xl text-blue-500" /> التحليل التفصيلي</h3>
                   <div className="flex flex-col gap-6">
                     {criteria.map(cat => {
                       const IconComp = IconMap[cat.icon] || Star;
                       return (
                         <div key={cat.id} className="relative">
                           <div className="flex items-center gap-3 mb-2">
-                            <div className={`p-2 rounded-xl shadow-md ${cat.colorObj.main}`}><IconComp className="w-5 h-5 text-white" /></div>
+                            <div className={`p-2 w-8 h-8 flex items-center justify-center rounded-xl shadow-md ${cat.colorObj.main}`}><IconComp className="text-sm text-white" /></div>
                             <div className="flex-1 flex justify-between items-end"><span className="font-bold text-gray-700">{cat.label}</span><span className={`font-black text-lg text-gray-800`}>{scores[cat.id]||0}/10</span></div>
                           </div>
                           <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden mb-2">
@@ -1341,13 +1391,13 @@ ${recentContext}\n${criteriaPrompt}`;
                 <div className="flex flex-col gap-4">
                   {comparison && (
                     <div className="bg-blue-50 p-5 rounded-3xl border border-blue-100 shadow-sm">
-                      <h3 className="text-blue-800 font-black text-sm mb-2 flex items-center gap-2"><TrendingUp className="w-4 h-4"/> مقارنة وتطور</h3>
+                      <h3 className="text-blue-800 font-black text-sm mb-2 flex items-center gap-2"><TrendingUp className="text-sm"/> مقارنة وتطور</h3>
                       <p className="text-blue-700 text-sm leading-relaxed font-medium">{comparison}</p>
                     </div>
                   )}
                   {tips && (
                     <div className="bg-amber-50 p-5 rounded-3xl border border-amber-100 shadow-sm">
-                      <h3 className="text-amber-800 font-black text-sm mb-2 flex items-center gap-2"><Lightbulb className="w-4 h-4"/> اقتراحات للتحسين</h3>
+                      <h3 className="text-amber-800 font-black text-sm mb-2 flex items-center gap-2"><Lightbulb className="text-sm"/> اقتراحات للتحسين</h3>
                       <p className="text-amber-700 text-sm leading-relaxed font-medium">{tips}</p>
                     </div>
                   )}
@@ -1355,7 +1405,7 @@ ${recentContext}\n${criteriaPrompt}`;
 
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col overflow-hidden mb-6 mt-2">
                   <div className="bg-slate-900 p-4 flex items-center gap-3">
-                    <MessageSquare className="w-5 h-5 text-blue-400" />
+                    <MessageSquare className="text-xl text-blue-400" />
                     <h3 className="text-white font-bold text-sm">الدردشة وتعديل التقييم</h3>
                   </div>
                   
@@ -1375,7 +1425,7 @@ ${recentContext}\n${criteriaPrompt}`;
                     {isChatting && (
                       <div className="flex justify-start">
                         <div className="bg-white border border-gray-200 text-gray-500 p-3 rounded-2xl rounded-tr-sm shadow-sm flex items-center gap-2 text-sm">
-                          <Loader className="w-4 h-4 animate-spin" /> جاري التفكير...
+                          <Loader className="text-sm animate-spin" /> جاري التفكير...
                         </div>
                       </div>
                     )}
@@ -1386,11 +1436,12 @@ ${recentContext}\n${criteriaPrompt}`;
                     <input 
                       type="text" value={chatInput} onChange={e => setChatInput(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                      placeholder="أخبرني المزيد لإضافته أو تعديله..."
-                      className="flex-1 bg-gray-100 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                      placeholder={globalApiKey ? "أخبرني المزيد لإضافته أو تعديله..." : "المفتاح العام غير متوفر للدردشة"}
+                      disabled={!globalApiKey}
+                      className="flex-1 bg-gray-100 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium disabled:opacity-50"
                     />
-                    <button onClick={handleSendMessage} disabled={isChatting || !chatInput.trim()} className="bg-blue-600 text-white p-2.5 rounded-xl disabled:opacity-50 hover:bg-blue-700 transition">
-                      <Send className="w-5 h-5" />
+                    <button onClick={handleSendMessage} disabled={isChatting || !chatInput.trim() || !globalApiKey} className="bg-blue-600 text-white p-2.5 rounded-xl disabled:opacity-50 hover:bg-blue-700 transition">
+                      <Send className="text-lg" />
                     </button>
                   </div>
                 </div>
@@ -1401,12 +1452,17 @@ ${recentContext}\n${criteriaPrompt}`;
         };
 
         // ==========================================
-        // 8. المكون الرئيسي والتطبيق
+        // 8. المكون الرئيسي والتطبيق (مع نظام المفتاح العام)
         // ==========================================
         function MainApp({ user }) {
           const [entries, setEntries] = useState({});
           const [monthlyTitles, setMonthlyTitles] = useState({});
           const [criteria, setCriteria] = useState(defaultCriteria);
+          
+          const [globalApiKey, setGlobalApiKey] = useState(null);
+          const [isCheckingKey, setIsCheckingKey] = useState(true);
+          const [inputKey, setInputKey] = useState("");
+          
           const [currentView, setCurrentView] = useState('dashboard');
           const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
           const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -1416,6 +1472,20 @@ ${recentContext}\n${criteriaPrompt}`;
           useEffect(() => {
             if (!user || !db) return;
             
+            // جلب المفتاح العام
+            const keyRef = db.doc(`artifacts/${appIdStr}/public/data/appSettings/globalKey`);
+            const unsubKey = keyRef.onSnapshot((docSnap) => {
+              if (docSnap.exists) {
+                setGlobalApiKey(docSnap.data().apiKey || "");
+              } else {
+                setGlobalApiKey("");
+              }
+              setIsCheckingKey(false);
+            }, (err) => { 
+              console.error("Error loading key", err); 
+              setIsCheckingKey(false); 
+            });
+
             const unsubEntries = db.collection(`artifacts/${appIdStr}/users/${user.uid}/entries`).onSnapshot((snapshot) => {
               const loadedEntries = {};
               snapshot.forEach(doc => { loadedEntries[doc.id] = doc.data(); });
@@ -1431,8 +1501,17 @@ ${recentContext}\n${criteriaPrompt}`;
               }
             });
 
-            return () => { unsubEntries(); unsubSettings(); };
+            return () => { unsubEntries(); unsubSettings(); unsubKey(); };
           }, [user]);
+
+          const handleSaveGlobalKey = async () => {
+            if(!inputKey.trim()) return alert("يرجى إدخال المفتاح أولاً.");
+            try {
+              await db.doc(`artifacts/${appIdStr}/public/data/appSettings/globalKey`).set({ apiKey: inputKey.trim() }, { merge: true });
+            } catch(e) {
+              alert("حدث خطأ أثناء حفظ المفتاح العام.");
+            }
+          };
 
           const updateEntryData = async (date, updatedData) => {
             const newData = { ...entries[date], ...updatedData };
@@ -1453,9 +1532,9 @@ ${recentContext}\n${criteriaPrompt}`;
               if (!isNaN(dateObj.getTime())) {
                 const mKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
                 const mEntries = Object.keys(newEntries).filter(k => k.startsWith(mKey)).map(k => ({ date: k, ...newEntries[k] }));
-                if (mEntries.length > 0) {
+                if (mEntries.length > 0 && globalApiKey) { 
                   const text = mEntries.map(e => `- ${e.date}: [${e.averageScore}/10] ${e.title}`).join('\n');
-                  generateMonthlyTitleAI(text).then(async newTitle => {
+                  generateMonthlyTitleAI(text, globalApiKey).then(async newTitle => {
                     if (newTitle) {
                       const newTitles = { ...monthlyTitles, [mKey]: newTitle };
                       setMonthlyTitles(newTitles);
@@ -1472,18 +1551,50 @@ ${recentContext}\n${criteriaPrompt}`;
             try { await db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).set({ criteria: newCriteria }, { merge: true }); } catch(e) {}
           };
 
-          if (isLoadingData) {
-            return <div className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center"><Loader className="w-10 h-10 animate-spin text-blue-500" /></div>;
+          if (isLoadingData || isCheckingKey) {
+            return <div className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center"><Loader className="text-4xl animate-spin text-blue-500" /></div>;
           }
+
+          const showGlobalKeyModal = globalApiKey === "";
 
           return (
             <div className="max-w-md mx-auto h-screen bg-slate-100 shadow-2xl font-sans relative flex flex-col overflow-hidden" dir="rtl">
-              {currentView === 'dashboard' && <DashboardView entries={entries} criteria={criteria} goToCalendar={() => {setCurrentMonth(new Date()); setCurrentView('calendar');}} goToYear={() => {setCurrentYear(new Date().getFullYear()); setCurrentView('year');}} goToSettings={() => setCurrentView('settings')} />}
+              
+              {/* نافذة إدخال المفتاح العام (تظهر للمسؤول/أول شخص فقط) */}
+              {showGlobalKeyModal && (
+                <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+                  <div className="bg-white rounded-3xl p-6 shadow-2xl w-full flex flex-col gap-4 relative overflow-hidden">
+                     <div className="absolute top-0 left-0 right-0 h-2 bg-blue-500"></div>
+                     <h2 className="text-xl font-black text-gray-800 flex items-center gap-2 mt-2">
+                       <Key className="text-xl text-blue-500" /> إعداد المفتاح العام
+                     </h2>
+                     <p className="text-sm text-gray-600 font-medium leading-relaxed">
+                       مرحباً بك! يبدو أن هذه هي المرة الأولى لتشغيل التطبيق. يرجى إدخال مفتاح الذكاء الاصطناعي (Gemini API Key) لمرة واحدة فقط. سيتم حفظه بأمان في قاعدة البيانات لجميع المستخدمين، ولن تظهر هذه النافذة مجدداً.
+                     </p>
+                     <input 
+                       type="password" 
+                       value={inputKey} 
+                       onChange={e => setInputKey(e.target.value)}
+                       className="bg-gray-50 border border-gray-200 p-4 rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-500 outline-none w-full mt-2"
+                       placeholder="AIzaSy..."
+                       dir="ltr"
+                     />
+                     <button 
+                       onClick={handleSaveGlobalKey}
+                       className="bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-lg mt-2"
+                     >
+                       حفظ وبدء الاستخدام
+                     </button>
+                  </div>
+                </div>
+              )}
+
+              {currentView === 'dashboard' && <DashboardView entries={entries} criteria={criteria} globalApiKey={globalApiKey} goToCalendar={() => {setCurrentMonth(new Date()); setCurrentView('calendar');}} goToYear={() => {setCurrentYear(new Date().getFullYear()); setCurrentView('year');}} goToSettings={() => setCurrentView('settings')} />}
               {currentView === 'settings' && <SettingsView criteria={criteria} saveCriteria={saveCriteriaData} goToDashboard={() => setCurrentView('dashboard')} />}
               {currentView === 'calendar' && <CalendarView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} goToDashboard={() => setCurrentView('dashboard')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
               {currentView === 'year' && <YearView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentYear={currentYear} setCurrentYear={setCurrentYear} goToDashboard={() => setCurrentView('dashboard')} setCurrentMonth={setCurrentMonth} setCurrentView={setCurrentView} />}
-              {currentView === 'form' && <EntryFormView selectedDate={selectedDate} setSelectedDate={setSelectedDate} entries={entries} criteria={criteria} saveEntry={saveEntryData} goToCalendar={() => setCurrentView('calendar')} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
-              {currentView === 'details' && <EntryDetailsView selectedDate={selectedDate} entries={entries} criteria={criteria} goToCalendar={() => setCurrentView('calendar')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} updateEntryData={updateEntryData} />}
+              {currentView === 'form' && <EntryFormView selectedDate={selectedDate} setSelectedDate={setSelectedDate} entries={entries} criteria={criteria} saveEntry={saveEntryData} globalApiKey={globalApiKey} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
+              {currentView === 'details' && <EntryDetailsView selectedDate={selectedDate} entries={entries} criteria={criteria} updateEntryData={updateEntryData} globalApiKey={globalApiKey} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} />}
 
               {currentView === 'dashboard' && (
                 <div className="absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none z-50">
@@ -1492,7 +1603,7 @@ ${recentContext}\n${criteriaPrompt}`;
                     setSelectedDate(todayStr);
                     if (entries[todayStr]) setCurrentView('details'); else setCurrentView('form');    
                   }} className="pointer-events-auto flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-full shadow-2xl shadow-blue-500/50 hover:bg-blue-700 transition-transform transform hover:-translate-y-1 active:scale-95">
-                    <Plus className="w-6 h-6" /> <span className="font-bold text-lg tracking-wide">إدخال اليوم</span>
+                    <Plus className="text-xl" /> <span className="font-bold text-lg tracking-wide">إدخال اليوم</span>
                   </button>
                 </div>
               )}
@@ -1519,7 +1630,7 @@ ${recentContext}\n${criteriaPrompt}`;
           return (
             <ErrorBoundary>
               {authLoading ? (
-                <div className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center"><Loader className="w-10 h-10 animate-spin text-blue-500" /></div>
+                <div className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center"><Loader className="text-4xl animate-spin text-blue-500" /></div>
               ) : user ? (
                 <MainApp user={user} />
               ) : (
