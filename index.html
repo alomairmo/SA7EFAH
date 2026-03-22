@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>يومياتي الذكية</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- خطوط عربية (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel لتحويل كود React -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo, Component } = React;
+
+        // ==========================================
+        // 1. الأيقونات (يجب تعريفها أولاً)
+        // ==========================================
+        const Brain = ({className}) => <i className={`fas fa-brain ${className||''}`}></i>;
+        const Star = ({className}) => <i className={`fas fa-star ${className||''}`}></i>;
+        const Heart = ({className}) => <i className={`fas fa-heart ${className||''}`}></i>;
+        const Users = ({className}) => <i className={`fas fa-users ${className||''}`}></i>;
+        const Briefcase = ({className}) => <i className={`fas fa-briefcase ${className||''}`}></i>;
+        const Activity = ({className}) => <i className={`fas fa-chart-line ${className||''}`}></i>;
+        const CalendarIcon = ({className}) => <i className={`fas fa-calendar-alt ${className||''}`}></i>;
+        const CalendarDays = CalendarIcon; const Calendar = CalendarIcon;
+        const Plus = ({className}) => <i className={`fas fa-plus ${className||''}`}></i>;
+        const ChevronRight = ({className}) => <i className={`fas fa-chevron-right ${className||''}`}></i>;
+        const ChevronLeft = ({className}) => <i className={`fas fa-chevron-left ${className||''}`}></i>;
+        const ArrowRight = ({className}) => <i className={`fas fa-arrow-right ${className||''}`}></i>;
+        const Loader = ({className}) => <i className={`fas fa-spinner fa-spin ${className||''}`}></i>;
+        const Loader2 = Loader; const RefreshCw = Loader;
+        const Edit = ({className}) => <i className={`fas fa-edit ${className||''}`}></i>;
+        const Edit3 = Edit;
+        const Lock = ({className}) => <i className={`fas fa-lock ${className||''}`}></i>;
+        const AlertCircle = ({className}) => <i className={`fas fa-exclamation-circle ${className||''}`}></i>;
+        const AlignLeft = ({className}) => <i className={`fas fa-align-left ${className||''}`}></i>;
+        const Grid = ({className}) => <i className={`fas fa-th ${className||''}`}></i>;
+        const Check = ({className}) => <i className={`fas fa-check ${className||''}`}></i>;
+        const CheckCircle = ({className}) => <i className={`fas fa-check-circle ${className||''}`}></i>;
+        const CheckCircle2 = CheckCircle;
+        const Home = ({className}) => <i className={`fas fa-home ${className||''}`}></i>;
+        const List = ({className}) => <i className={`fas fa-list ${className||''}`}></i>;
+        const ListTodo = ({className}) => <i className={`fas fa-tasks ${className||''}`}></i>;
+        const MessageSquare = ({className}) => <i className={`fas fa-comment-alt ${className||''}`}></i>;
+        const Send = ({className}) => <i className={`fas fa-paper-plane ${className||''}`}></i>;
+        const Settings = ({className}) => <i className={`fas fa-cog ${className||''}`}></i>;
+        const Trash = ({className}) => <i className={`fas fa-trash ${className||''}`}></i>;
+        const Trash2 = Trash;
+        const X = ({className}) => <i className={`fas fa-times ${className||''}`}></i>;
+        const LogOut = ({className}) => <i className={`fas fa-sign-out-alt ${className||''}`}></i>;
+        const Mail = ({className}) => <i className={`fas fa-envelope ${className||''}`}></i>;
+        const Key = ({className}) => <i className={`fas fa-key ${className||''}`}></i>;
+        const UserPlus = ({className}) => <i className={`fas fa-user-plus ${className||''}`}></i>;
+        const LogIn = ({className}) => <i className={`fas fa-sign-in-alt ${className||''}`}></i>;
+        const User = ({className}) => <i className={`fas fa-user ${className||''}`}></i>;
+        const Phone = ({className}) => <i className={`fas fa-phone ${className||''}`}></i>;
+        const TrendingUp = ({className}) => <i className={`fas fa-arrow-trend-up ${className||''}`}></i>;
+        const Lightbulb = ({className}) => <i className={`fas fa-lightbulb ${className||''}`}></i>;
+        const Sparkles = Lightbulb;
+        const PlayCircle = ({className}) => <i className={`fas fa-play-circle ${className||''}`}></i>;
+        const BarChart = ({className}) => <i className={`fas fa-chart-bar ${className||''}`}></i>;
+        const BarChart3 = BarChart;
+        const LineChart = ({className}) => <i className={`fas fa-chart-line ${className||''}`}></i>;
+        const LayoutDashboard = ({className}) => <i className={`fas fa-tachometer-alt ${className||''}`}></i>;
+        const Mic = ({className}) => <i className={`fas fa-microphone ${className||''}`}></i>;
+        const MicOff = ({className}) => <i className={`fas fa-microphone-slash ${className||''}`}></i>;
+        const Book = ({className}) => <i className={`fas fa-book ${className||''}`}></i>;
+        const Coffee = ({className}) => <i className={`fas fa-coffee ${className||''}`}></i>;
+        const Music = ({className}) => <i className={`fas fa-music ${className||''}`}></i>;
+        const Sun = ({className}) => <i className={`fas fa-sun ${className||''}`}></i>;
+        const Moon = ({className}) => <i className={`fas fa-moon ${className||''}`}></i>;
+        const Zap = ({className}) => <i className={`fas fa-bolt ${className||''}`}></i>;
+        const Shield = ({className}) => <i className={`fas fa-shield-alt ${className||''}`}></i>;
+        const Target = ({className}) => <i className={`fas fa-bullseye ${className||''}`}></i>;
+        const Smile = ({className}) => <i className={`fas fa-smile ${className||''}`}></i>;
+        const Compass = ({className}) => <i className={`fas fa-compass ${className||''}`}></i>;
+        const Feather = ({className}) => <i className={`fas fa-feather ${className||''}`}></i>;
+        const Flame = ({className}) => <i className={`fas fa-fire ${className||''}`}></i>;
+
+        // ==========================================
+        // 2. نظام الحماية من الانهيار (Error Boundary)
+        // ==========================================
+        class ErrorBoundary extends Component {
+          constructor(props) {
+            super(props);
+            this.state = { hasError: false, errorMsg: '' };
+          }
+          static getDerivedStateFromError(error) {
+            return { hasError: true, errorMsg: error.toString() };
+          }
+          componentDidCatch(error, errorInfo) {
+            console.error("App crashed:", error, errorInfo);
+          }
+          render() {
+            if (this.state.hasError) {
+              return (
+                <div className="flex flex-col items-center justify-center h-screen bg-slate-900 p-6 text-center" dir="rtl">
+                  <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
+                  <h1 className="text-2xl font-bold text-red-500 mb-2">عذراً، حدث خطأ في النظام</h1>
+                  <p className="text-gray-400 mb-6 text-sm max-w-sm" dir="ltr">{this.state.errorMsg}</p>
+                  <button onClick={() => window.location.reload()} className="px-6 py-3 font-bold bg-red-600 text-white rounded-xl shadow-lg hover:bg-red-700">إعادة تحميل التطبيق</button>
+                </div>
+              );
+            }
+            return this.props.children;
+          }
+        }
+
+        // ==========================================
+        // 3. الثوابت الأساسية والإعدادات
+        // ==========================================
+        const IconMap = { Brain, Star, Heart, Users, Briefcase, Activity, Book, Coffee, Music, Sun, Moon, Zap, Shield, Target, Smile, Compass, Feather, Flame };
+        
+        const availableColors = [
+          { main: 'bg-purple-500', light: 'bg-purple-50', text: 'text-purple-600' },
+          { main: 'bg-sky-500', light: 'bg-sky-50', text: 'text-sky-600' },
+          { main: 'bg-rose-500', light: 'bg-rose-50', text: 'text-rose-600' },
+          { main: 'bg-orange-500', light: 'bg-orange-50', text: 'text-orange-600' },
+          { main: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-600' },
+          { main: 'bg-indigo-500', light: 'bg-indigo-50', text: 'text-indigo-600' },
+          { main: 'bg-amber-500', light: 'bg-amber-50', text: 'text-amber-600' }
+        ];
+        
+        const defaultCriteria = [
+          { id: 'mental', label: 'عقلية وعلمية', icon: 'Brain', desc: '', colorObj: availableColors[0] },
+          { id: 'spiritual', label: 'روحية', icon: 'Star', desc: '', colorObj: availableColors[1] },
+          { id: 'physical', label: 'جسدية', icon: 'Heart', desc: '', colorObj: availableColors[2] },
+          { id: 'social', label: 'اجتماعية', icon: 'Users', desc: '', colorObj: availableColors[3] },
+          { id: 'career', label: 'وظيفية ومالية', icon: 'Briefcase', desc: '', colorObj: availableColors[4] },
+        ];
+
+        // ==========================================
+        // 4. إعدادات المفاتيح وقواعد البيانات
+        // ==========================================
+        const GEMINI_API_KEY = "AIzaSyDydwtsbXdJK-LdE2g2fng6oBa0UC_sz8o"; 
+
+        const myFirebaseConfig = {
+          apiKey: "AIzaSyDDokNKC3OcV2Z_dG-AqPNBd4pQzhxd5jk",
+          authDomain: "sa7efah-7d90a.firebaseapp.com",
+          projectId: "sa7efah-7d90a",
+          storageBucket: "sa7efah-7d90a.firebasestorage.app",
+          messagingSenderId: "320865055632",
+          appId: "1:320865055632:web:70917cf974ce6ba74fb915"
+        };
+
+        const isPreviewEnv = typeof __firebase_config !== 'undefined';
+        const appIdStr = (isPreviewEnv && typeof __app_id !== 'undefined') ? __app_id : 'smart-journal-sa7efah';
+
+        let app = null, auth = null, db = null;
+
+        try {
+          const finalConfig = isPreviewEnv ? JSON.parse(__firebase_config) : myFirebaseConfig;
+          if (!firebase.apps.length) { app = firebase.initializeApp(finalConfig); } 
+          else { app = firebase.app(); }
+          auth = firebase.auth(); db = firebase.firestore();
+        } catch (error) { console.error("خطأ في تهيئة Firebase:", error); }
+
+        // ==========================================
+        // 5. استكشاف الذكاء الاصطناعي والمساعدات
+        // ==========================================
+        const getValidGeminiModel = async () => {
+          if (window.discoveredModelCache) return window.discoveredModelCache;
+
+          try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_API_KEY}`);
+            const data = await res.json();
+            
+            if (data.error) throw new Error(data.error.message);
+
+            if (data.models && data.models.length > 0) {
+              const validModels = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
+              
+              let selected = validModels.find(m => m.name === 'models/gemini-1.5-flash') ||
+                             validModels.find(m => m.name.includes("flash")) ||
+                             validModels.find(m => m.name.includes("pro")) ||
+                             validModels[0];
+              
+              if (selected) {
+                window.discoveredModelCache = selected.name.replace('models/', '');
+                console.log("تم اكتشاف المحرك المتوافق:", window.discoveredModelCache);
+                return window.discoveredModelCache;
+              }
+            }
+            throw new Error("لا توجد نماذج مدعومة في المفتاح.");
+          } catch(e) { 
+            console.error("فشل الاستكشاف:", e);
+            return "gemini-1.5-flash"; 
+          }
+        };
+
+        const cleanJSONString = (str) => {
+          if (!str) return "";
+          try {
+            let cleaned = str.replace(/```json/gi, '').replace(/```/g, '').trim();
+            cleaned = cleaned.replace(/,\s*([\]}])/g, '$1'); 
+            return cleaned;
+          } catch (e) { return ""; }
+        };
+
+        const fetchWithRetry = async (url, payload, retries = 3) => {
+          let lastError = null;
+          for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+              const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+              const data = await response.json();
+              if (!response.ok) throw new Error(data.error?.message || `خطأ اتصال مع الخادم`);
+              const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (!resultText) throw new Error("استجابة فارغة من الذكاء الاصطناعي");
+              return JSON.parse(cleanJSONString(resultText));
+            } catch (err) {
+              lastError = err;
+              if (attempt === retries) break;
+              await new Promise(res => setTimeout(res, 1500 * attempt));
+            }
+          }
+          throw lastError;
+        };
+
+        const analyzeJournalWithAI = async (combinedText, audioData, recentEntries, criteria) => {
+          const modelName = await getValidGeminiModel();
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+          
+          let recentContext = "لا توجد سجلات سابقة للمقارنة.";
+          if (recentEntries && recentEntries.length > 0) {
+            recentContext = `الأيام السابقة:\n` + recentEntries.map(e => `- ${e.date}: تقييم (${e.averageScore}/10). التفاصيل: ${JSON.stringify(e.scores)}`).join('\n');
+          }
+
+          let criteriaPrompt = "المعايير:\n";
+          let dynamicProperties = { 
+            transcript: { type: "STRING", description: "تفريغ الصوت فقط (إن وجد)." },
+            tasks: { type: "ARRAY", items: { type: "STRING" }, description: "قائمة المهام المنجزة." }, 
+            title: { type: "STRING", description: "لقب يصف اليوم (4 كلمات أقصى حد)." },
+            comparison: { type: "STRING", description: "قارن الأداء بأسلوب مشجع." },
+            tips: { type: "STRING", description: "نصائح للتحسين." }
+          };
+          let requiredKeys = ["transcript", "tasks", "title", "comparison", "tips"];
+
+          criteria.forEach(c => {
+            criteriaPrompt += `- ${c.label}: ${c.desc || 'استنتج التقييم'}\n`;
+            dynamicProperties[`score_${c.id}`] = { type: "INTEGER", description: `تقييم ${c.label} (0-10)` };
+            dynamicProperties[`detail_${c.id}`] = { type: "STRING", description: `سبب التقييم لـ ${c.label} (سطر واحد)` };
+            requiredKeys.push(`score_${c.id}`, `detail_${c.id}`);
+          });
+
+          const systemPrompt = `أنت محلل حياة. حلل يوميات المستخدم. 
+اللقب: 4 كلمات كحد أقصى.
+المهام: استخرجها جميعاً.
+التقييم: 0-10 لكل معيار مع تبرير بسطر واحد.
+${recentContext}\n${criteriaPrompt}`;
+
+          const parts = [];
+          if (combinedText && combinedText.trim() !== "") parts.push({ text: `نص أحداث اليوم:\n${combinedText}` });
+          if (audioData) {
+            parts.push({ inlineData: { mimeType: audioData.mimeType, data: audioData.base64 } });
+            parts.push({ text: "\nفرّغ الصوت وحلله مع النص." });
+          } else if (!combinedText || combinedText.trim() === "") throw new Error("لا يوجد نص أو صوت.");
+
+          const payload = {
+            contents: [{ role: "user", parts: parts }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: dynamicProperties, required: requiredKeys } }
+          };
+          return await fetchWithRetry(url, payload);
+        };
+
+        const chatWithJournalAI = async (currentEntry, chatHistory, userMessage, criteria) => {
+          const modelName = await getValidGeminiModel();
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+          const historyContext = chatHistory.map(msg => `${msg.sender === 'user' ? 'المستخدم' : 'الذكاء الاصطناعي'}: ${msg.text}`).join('\n');
+          let scoresContext = criteria.map(c => `${c.label}(${currentEntry.scores?.[c.id] || 0})`).join(', ');
+          const entryContext = `اللقب الحالي: ${currentEntry.title}\nالمهام: ${(currentEntry.tasks || []).join('، ')}\nالتقييمات: ${scoresContext}`;
+
+          let dynamicProperties = { 
+            reply: { type: "STRING" }, title: { type: "STRING" },
+            tasks: { type: "ARRAY", items: { type: "STRING" }, description: "تحديث قائمة المهام." }
+          };
+          criteria.forEach(c => { dynamicProperties[`score_${c.id}`] = { type: "INTEGER" }; });
+
+          const payload = {
+            contents: [{ role: "user", parts: [{ text: `سجل المحادثة:\n${historyContext}\n\nرسالة المستخدم: ${userMessage}` }] }],
+            systemInstruction: { parts: [{ text: `أنت مساعد ليومياتي. رد على المستخدم وعدّل التقييمات، اللقب، وأضف أي مهام جديدة.\n\n${entryContext}` }] },
+            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: dynamicProperties, required: ["reply", "tasks"] } }
+          };
+          return await fetchWithRetry(url, payload);
+        };
+
+        const generateDashboardInsightsAI = async (entries, criteria) => {
+          const modelName = await getValidGeminiModel();
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+          const entriesSummary = entries.map(e => `[${e.date}]: اللقب(${e.title}), المهام(${e.tasks?.join('، ') || 'لا يوجد'})`).join('\n').substring(0, 15000);
+
+          let dynamicProperties = { overallTitle: { type: "STRING" } };
+          let requiredKeys = ["overallTitle"];
+          criteria.forEach(c => { dynamicProperties[`advice_${c.id}`] = { type: "STRING", description: `توصية لـ ${c.label}` }; requiredKeys.push(`advice_${c.id}`); });
+
+          const payload = {
+            contents: [{ role: "user", parts: [{ text: `ملخص أيامي:\n${entriesSummary}\nاستخرج لقباً دقيقاً يصفني ونصيحة لكل معيار.` }] }],
+            systemInstruction: { parts: [{ text: "أرجع JSON بلقب شامل يعكس حقيقة الأفعال (أقصى 4 كلمات) وتوصيات قصيرة." }] },
+            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: dynamicProperties, required: requiredKeys } }
+          };
+          return await fetchWithRetry(url, payload);
+        };
+
+        const generateMonthlyTitleAI = async (entriesText) => {
+          const modelName = await getValidGeminiModel();
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`;
+          const payload = {
+            contents: [{ role: "user", parts: [{ text: `استخرج لقباً يصف هذا الشهر (4 كلمات كحد أقصى):\n${entriesText}` }] }],
+            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { monthlyTitle: { type: "STRING" } }, required: ["monthlyTitle"] } }
+          };
+          const res = await fetchWithRetry(url, payload);
+          return res ? res.monthlyTitle : "شهر جديد";
+        };
+
+        const calculateAverageScore = (scores, criteria) => {
+          if (!scores || !criteria || criteria.length === 0) return "0.0";
+          try {
+            let sum = 0;
+            criteria.forEach(c => { sum += Math.max(0, Math.min(10, parseInt(scores[c.id]) || 0)); });
+            return (sum / criteria.length).toFixed(1);
+          } catch (e) { return "0.0"; }
+        };
+
+        const getColorClass = (score) => {
+          const s = parseFloat(score);
+          if (isNaN(s) || s === 0) return 'bg-gray-100 text-gray-400 border-gray-200';
+          if (s <= 2) return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+          if (s <= 4) return 'bg-yellow-300 text-yellow-900 border-yellow-400';
+          if (s <= 6) return 'bg-lime-300 text-lime-900 border-lime-400';
+          if (s <= 8) return 'bg-green-400 text-white border-green-500';
+          return 'bg-green-600 text-white border-green-700 shadow-md';
+        };
+
+        const getChartBgColorClass = (score) => {
+          if (score <= 2) return 'bg-yellow-500';
+          if (score <= 4) return 'bg-yellow-400';
+          if (score <= 6) return 'bg-lime-400';
+          if (score <= 8) return 'bg-green-400';
+          return 'bg-green-600';
+        };
+
+        const getChartStrokeColorClass = (score) => {
+          if (score <= 2) return 'text-yellow-500';
+          if (score <= 4) return 'text-yellow-400';
+          if (score <= 6) return 'text-lime-400';
+          if (score <= 8) return 'text-green-400';
+          return 'text-green-600';
+        };
+
+        // ==========================================
+        // 6. مكونات الرسوم البيانية المتطورة
+        // ==========================================
+        const BarChartComponent = ({ data, onBarClick }) => {
+          return (
+            <div className="w-full overflow-x-auto bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex items-end justify-between min-w-max gap-3 h-[280px] pt-12 scrollbar-hide">
+               {data.map((d, i) => {
+                  const score = parseFloat(d.displayScore || 0);
+                  const hasData = d.entry || d.entriesCount > 0;
+                  const heightPercentage = hasData ? Math.max(8, (score / 10) * 100) : 4;
+
+                  return (
+                    <button key={i} onClick={() => hasData ? onBarClick(d) : null} className={`flex flex-col items-center group relative w-10 shrink-0 h-full justify-end ${hasData ? 'cursor-pointer' : 'cursor-default opacity-50'}`}>
+                      {hasData && (
+                        <div className="opacity-0 group-hover:opacity-100 absolute -top-10 bg-slate-800 text-white text-xs font-bold py-1.5 px-3 rounded-lg pointer-events-none whitespace-nowrap z-10 transition-opacity">
+                          {score} - {d.entry?.title || d.title || ''}
+                        </div>
+                      )}
+                      <div className={`w-full rounded-xl transition-all duration-500 ${hasData ? getChartBgColorClass(score) : 'bg-gray-200'} group-hover:opacity-80`} style={{ height: `${heightPercentage}%` }}></div>
+                      <span className={`text-[11px] mt-3 font-bold ${hasData ? 'text-gray-700' : 'text-gray-400'}`}>{d.label || d.dayNum}</span>
+                    </button>
+                  )
+               })}
+            </div>
+          )
+        };
+
+        const LineChartComponent = ({ data, totalItems, onPointClick }) => {
+          const validData = data.filter(d => d.entry || d.entriesCount > 0);
+          if(validData.length === 0) return <div className="text-center p-10 text-gray-500 bg-white rounded-3xl border border-gray-100 mt-4">لا توجد بيانات كافية للرسم البياني.</div>;
+
+          const padding = 40;
+          const svgWidth = Math.max(400, totalItems * 45);
+          const svgHeight = 260;
+          const usableHeight = svgHeight - padding * 2;
+
+          const points = validData.map(d => {
+            const idx = d.dayNum || (d.index + 1);
+            const x = padding + (idx - 1) * ((svgWidth - padding * 2) / Math.max(1, totalItems - 1));
+            const score = parseFloat(d.displayScore || 0);
+            const y = svgHeight - padding - ((score / 10) * usableHeight);
+            return { x, y, score, ...d };
+          });
+
+          const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+
+          return (
+            <div className="w-full overflow-x-auto bg-white rounded-3xl p-4 shadow-sm border border-gray-100 scrollbar-hide">
+              <svg width={svgWidth} height={svgHeight} className="overflow-visible min-w-full">
+                 {[0, 2.5, 5, 7.5, 10].map(val => (
+                   <g key={val}>
+                      <line x1={padding} y1={svgHeight - padding - (val/10)*usableHeight} x2={svgWidth - padding} y2={svgHeight - padding - (val/10)*usableHeight} stroke="#f3f4f6" strokeWidth="2" strokeDasharray="4 4" />
+                      <text x={padding - 15} y={svgHeight - padding - (val/10)*usableHeight + 4} fontSize="10" fill="#9ca3af" textAnchor="end" fontWeight="bold">{val}</text>
+                   </g>
+                 ))}
+                 <path d={pathD} fill="none" stroke="#cbd5e1" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" />
+                 {points.map((p, i) => (
+                   <g key={i} className="group cursor-pointer outline-none" onClick={() => onPointClick(p)}>
+                     <circle cx={p.x} cy={p.y} r="6" fill="#fff" className={`${getChartStrokeColorClass(p.score)} transition-all duration-300 group-hover:r-8`} strokeWidth="4" stroke="currentColor" />
+                     <text x={p.x} y={svgHeight - 10} fontSize="11" fill="#6b7280" textAnchor="middle" fontWeight="bold">{p.label || p.dayNum}</text>
+                     <rect x={p.x - 20} y={p.y - 35} width="40" height="20" rx="4" fill="#1e293b" className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                     <text x={p.x} y={p.y - 21} fontSize="12" fill="#fff" fontWeight="bold" textAnchor="middle" className="opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">{p.score}</text>
+                   </g>
+                 ))}
+              </svg>
+            </div>
+          )
+        };
+
+        // ==========================================
+        // 7. شاشات العرض والتسجيل
+        // ==========================================
+        const AuthView = () => {
+          const [isLogin, setIsLogin] = useState(true);
+          const [name, setName] = useState('');
+          const [phone, setPhone] = useState('');
+          const [email, setEmail] = useState('');
+          const [password, setPassword] = useState('');
+          const [rememberMe, setRememberMe] = useState(true); 
+          const [error, setError] = useState('');
+          const [loading, setLoading] = useState(false);
+
+          const handleSubmit = async (e) => {
+            e.preventDefault();
+            if (isLogin) {
+              if (!email || !password) return setError('يرجى تعبئة جميع الحقول');
+            } else {
+              if (!name || !phone || !email || !password) return setError('يرجى تعبئة جميع الحقول لإنشاء الحساب');
+            }
+            
+            if (!auth) return setError('حدث خطأ في الاتصال بقاعدة البيانات.');
+            
+            setError('');
+            setLoading(true);
+            try {
+              await auth.setPersistence(rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION);
+              
+              if (isLogin) {
+                await auth.signInWithEmailAndPassword(email, password);
+              } else {
+                const userCred = await auth.createUserWithEmailAndPassword(email, password);
+                if (db) {
+                  await db.doc(`artifacts/${appIdStr}/users/${userCred.user.uid}/profile/info`).set({ name, phone, email, createdAt: Date.now() });
+                }
+              }
+            } catch (err) {
+              if (err.code === 'auth/email-already-in-use') setError('البريد الإلكتروني مستخدم مسبقاً');
+              else if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') setError('بيانات الدخول غير صحيحة');
+              else if (err.code === 'auth/weak-password') setError('كلمة المرور ضعيفة جداً');
+              else setError('حدث خطأ: ' + err.message);
+            } finally { setLoading(false); }
+          };
+
+          return (
+            <div className="flex-1 flex items-center justify-center bg-slate-50 p-6 min-h-screen">
+              <div className="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl border border-gray-100 relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-32 bg-slate-900 rounded-b-[3rem] z-0"></div>
+                <div className="relative z-10 flex flex-col items-center mb-8 pt-4">
+                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-lg mb-4 border-4 border-slate-50"><Brain className="w-10 h-10 text-blue-600" /></div>
+                  <h1 className="text-2xl font-black text-gray-800">يومياتي الذكية</h1>
+                  <p className="text-sm text-gray-500 font-medium mt-1">حلل يومك، طوّر ذاتك</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4 relative z-10">
+                  {!isLogin && (
+                    <>
+                      <div>
+                        <div className="relative">
+                          <User className="w-5 h-5 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                          <input type="text" value={name} onChange={e=>setName(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="الاسم الكامل" />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="relative">
+                          <Phone className="w-5 h-5 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" />
+                          <input type="tel" value={phone} onChange={e=>setPhone(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="05XXXXXXXX" dir="ltr" />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  <div>
+                    <div className="relative"><Mail className="w-5 h-5 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" /><input type="email" value={email} onChange={e=>setEmail(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="البريد الإلكتروني" /></div>
+                  </div>
+                  <div>
+                    <div className="relative"><Key className="w-5 h-5 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2" /><input type="password" value={password} onChange={e=>setPassword(e.target.value)} className="w-full bg-gray-50 border border-gray-200 rounded-xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="كلمة المرور" /></div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <input type="checkbox" id="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer" />
+                    <label htmlFor="rememberMe" className="text-xs font-bold text-gray-600 cursor-pointer select-none">تذكرني (البقاء متصلاً)</label>
+                  </div>
+                  {error && <div className="text-red-600 text-xs font-bold bg-red-50 p-3 rounded-lg flex items-start gap-2"><AlertCircle className="w-4 h-4 shrink-0" />{error}</div>}
+                  <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white font-bold text-lg rounded-xl py-3.5 shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition mt-2 flex justify-center items-center gap-2">
+                    {loading ? <Loader className="w-5 h-5 animate-spin" /> : (isLogin ? <><LogIn className="w-5 h-5"/> تسجيل الدخول</> : <><UserPlus className="w-5 h-5"/> إنشاء حساب</>)}
+                  </button>
+                </form>
+                <div className="mt-6 flex flex-col gap-4 relative z-10">
+                  <button onClick={() => {setIsLogin(!isLogin); setError('');}} className="text-sm font-bold text-gray-500 hover:text-blue-600 transition">
+                    {isLogin ? "ليس لديك حساب؟ سجل الآن" : "لديك حساب بالفعل؟ سجل دخولك"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const SettingsView = ({ criteria, saveCriteria, goToDashboard }) => {
+          const [editingId, setEditingId] = useState(null);
+          const [formData, setFormData] = useState({ label: '', desc: '', icon: 'Star' });
+
+          const handleEdit = (c) => { setEditingId(c.id); setFormData({ label: c.label, desc: c.desc, icon: c.icon }); };
+
+          const handleDelete = (id) => {
+            if (criteria.length <= 1) return alert("يجب أن يكون هناك معيار واحد على الأقل.");
+            if (window.confirm("حذف هذا المعيار؟")) {
+              saveCriteria(criteria.filter(c => c.id !== id));
+            }
+          };
+
+          const handleSave = () => {
+            if (!formData.label.trim()) return alert("اسم المعيار مطلوب");
+            if (editingId) {
+              saveCriteria(criteria.map(c => c.id === editingId ? { ...c, ...formData } : c));
+            } else {
+              const newId = `crit_${Date.now()}`;
+              const randomColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+              saveCriteria([...criteria, { id: newId, ...formData, colorObj: randomColor }]);
+            }
+            setEditingId(null); setFormData({ label: '', desc: '', icon: 'Star' });
+          };
+
+          const handleLogout = () => { if(auth) auth.signOut(); };
+
+          return (
+            <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
+              <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem] flex justify-between items-center sticky top-0 z-20">
+                <button onClick={goToDashboard} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ArrowRight className="w-5 h-5 text-gray-700" /></button>
+                <h1 className="text-xl font-black text-gray-800">الإعدادات</h1>
+                <button onClick={handleLogout} className="p-2 bg-red-50 text-red-600 rounded-full hover:bg-red-100" title="تسجيل الخروج"><LogOut className="w-5 h-5" /></button>
+              </header>
+
+              <div className="p-5">
+                <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 mb-6">
+                  <h2 className="text-gray-800 font-bold mb-4">{editingId ? "تعديل المعيار" : "إضافة معيار جديد"}</h2>
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 mb-1 block">الأيقونة</label>
+                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                        {Object.keys(IconMap).map(iconName => {
+                          const IconComp = IconMap[iconName];
+                          return (
+                            <button key={iconName} onClick={() => setFormData({...formData, icon: iconName})} className={`p-3 rounded-xl border shrink-0 transition-all ${formData.icon === iconName ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-gray-50 border-transparent text-gray-400 hover:bg-gray-100'}`}>
+                              <IconComp className="w-6 h-6" />
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 mb-1 block">اسم المعيار (مثل: اجتماعية، دينية)</label>
+                      <input type="text" value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="أدخل اسم المعيار..." />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 mb-1 block">شرح المعيار للذكاء الاصطناعي (اختياري)</label>
+                      <textarea value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} rows="2" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="مثال: يركز هذا الجانب على صلة الرحم..."></textarea>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={handleSave} className="flex-1 bg-blue-600 text-white font-bold rounded-xl py-3 shadow-md hover:bg-blue-700">حفظ المعيار</button>
+                      {editingId && <button onClick={() => {setEditingId(null); setFormData({label:'', desc:'', icon:'Star'})}} className="px-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300">إلغاء</button>}
+                    </div>
+                  </div>
+                </div>
+
+                <h3 className="text-gray-500 font-bold text-sm mb-3 px-1">المعايير الحالية ({criteria.length})</h3>
+                <div className="flex flex-col gap-3">
+                  {criteria.map(c => {
+                    const IconComp = IconMap[c.icon] || Star;
+                    return (
+                      <div key={c.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-xl ${c.colorObj.main}`}><IconComp className="w-5 h-5 text-white" /></div>
+                          <div>
+                            <h4 className="font-bold text-gray-800 text-sm">{c.label}</h4>
+                            {c.desc && <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[150px]">{c.desc}</p>}
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <button onClick={() => handleEdit(c)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><Edit className="w-4 h-4" /></button>
+                          <button onClick={() => handleDelete(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash className="w-4 h-4" /></button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        };
+
+        const DashboardView = ({ entries, criteria, goToCalendar, goToYear, goToSettings }) => {
+          const [dashboardFilter, setDashboardFilter] = useState('40days');
+          const [insights, setInsights] = useState(null);
+          const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+
+          const filteredEntries = useMemo(() => {
+            try {
+              const now = new Date();
+              const allKeys = Object.keys(entries || {});
+              if (dashboardFilter === 'all') return allKeys.map(k => ({ date: k, ...entries[k] }));
+              
+              return allKeys.filter(key => {
+                const d = new Date(key);
+                if (isNaN(d.getTime())) return false;
+                if (dashboardFilter === '40days') return (now - d) <= (40 * 24 * 60 * 60 * 1000);
+                if (dashboardFilter === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                if (dashboardFilter === 'year') return d.getFullYear() === now.getFullYear();
+                return true;
+              }).map(k => ({ date: k, ...entries[k] }));
+            } catch (e) { return []; }
+          }, [entries, dashboardFilter]);
+
+          const stats = useMemo(() => {
+            if (!filteredEntries || filteredEntries.length === 0) return { avg: "0.0", totalTasks: 0, criteriaScores: {} };
+            let sumAvg = 0, tTasks = 0;
+            let cScores = {};
+            criteria.forEach(c => cScores[c.id] = 0);
+            
+            filteredEntries.forEach(e => {
+              sumAvg += parseFloat(e.averageScore || 0);
+              tTasks += (Array.isArray(e?.tasks) ? e.tasks.length : 0);
+              criteria.forEach(c => { cScores[c.id] += parseFloat(e?.scores?.[c.id] || 0); });
+            });
+            
+            const len = filteredEntries.length;
+            let finalScores = {};
+            criteria.forEach(c => { finalScores[c.id] = (cScores[c.id] / len).toFixed(1); });
+
+            return { avg: (sumAvg / len).toFixed(1), totalTasks: tTasks, criteriaScores: finalScores };
+          }, [filteredEntries, criteria]);
+
+          useEffect(() => {
+            let isMounted = true;
+            if (filteredEntries.length === 0) { setInsights(null); return; }
+            const fetchInsights = async () => {
+              setIsGeneratingInsights(true);
+              try { 
+                const res = await generateDashboardInsightsAI(filteredEntries, criteria); 
+                if (isMounted && res) setInsights(res); 
+              } catch(e) { } 
+              finally { if(isMounted) setIsGeneratingInsights(false); }
+            };
+            fetchInsights();
+            return () => { isMounted = false; };
+          }, [dashboardFilter, filteredEntries, criteria]);
+
+          return (
+            <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-32">
+              <header className="bg-slate-900 text-white p-6 pb-8 shadow-xl rounded-b-[2.5rem] relative overflow-hidden">
+                <div className="flex justify-between items-center mb-6 relative z-10">
+                  <h1 className="text-xl font-extrabold flex items-center gap-2"><LayoutDashboard className="w-6 h-6 text-blue-400" /> إحصائياتي</h1>
+                  <div className="flex gap-2">
+                    <select value={dashboardFilter} onChange={(e) => setDashboardFilter(e.target.value)} className="bg-white/10 text-white text-sm border border-white/20 outline-none focus:ring-2 focus:ring-blue-400 rounded-xl px-2 py-2 font-medium">
+                      <option value="40days" className="text-gray-800">40 يوم</option>
+                      <option value="month" className="text-gray-800">الشهر</option>
+                      <option value="year" className="text-gray-800">السنة</option>
+                      <option value="all" className="text-gray-800">الكل</option>
+                    </select>
+                    <button onClick={goToSettings} className="p-2 bg-white/10 border border-white/20 rounded-xl hover:bg-white/20 transition">
+                      <Settings className="w-5 h-5 text-white" />
+                    </button>
+                  </div>
+                </div>
+                
+                {filteredEntries.length === 0 ? (
+                  <div className="text-center py-6 relative z-10"><p className="text-white/70 font-medium">لا توجد بيانات مسجلة.</p></div>
+                ) : (
+                  <div className="flex flex-col gap-6 relative z-10">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <p className="text-white/60 text-xs font-bold uppercase mb-1">اللقب العام</p>
+                        <h2 className="text-2xl font-black text-white leading-tight">
+                          {insights?.overallTitle || (isGeneratingInsights ? <Loader className="w-5 h-5 animate-spin inline" /> : "مُنجز")}
+                        </h2>
+                      </div>
+                      <div className="text-center bg-white/10 p-3 rounded-2xl border border-white/10 min-w-[80px]">
+                        <p className="text-white/60 text-[10px] font-bold uppercase mb-1">المتوسط</p>
+                        <div className="text-3xl font-black text-green-400">{stats.avg}</div>
+                      </div>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4">
+                      <div className="p-3 bg-blue-500/20 rounded-xl"><ListTodo className="w-6 h-6 text-blue-300" /></div>
+                      <div><div className="text-3xl font-black text-white">{stats.totalTasks}</div><div className="text-xs text-white/60 font-bold uppercase">مهمة وعمل منجز</div></div>
+                    </div>
+                  </div>
+                )}
+              </header>
+
+              <div className="px-5 mt-6 flex flex-col gap-6 relative z-10">
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={goToCalendar} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 hover:bg-blue-50 active:scale-95 transition">
+                    <CalendarDays className="w-7 h-7 text-blue-500" /><span className="font-bold text-gray-700 text-sm">عرض الأيام</span>
+                  </button>
+                  <button onClick={goToYear} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 hover:bg-blue-50 active:scale-95 transition">
+                    <Calendar className="w-7 h-7 text-purple-500" /><span className="font-bold text-gray-700 text-sm">عرض الشهور</span>
+                  </button>
+                </div>
+
+                {filteredEntries.length > 0 && (
+                  <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
+                    <h3 className="text-gray-800 font-black text-lg mb-6 flex items-center gap-2"><Activity className="w-5 h-5 text-blue-500" /> التحليل العام</h3>
+                    <div className="flex flex-col gap-8">
+                      {criteria.map(cat => {
+                        const IconComp = IconMap[cat.icon] || Star;
+                        const score = stats.criteriaScores[cat.id] || "0.0";
+                        return (
+                          <div key={cat.id} className="relative">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className={`p-2 rounded-xl shadow-md ${cat.colorObj.main}`}><IconComp className="w-5 h-5 text-white" /></div>
+                              <div className="flex-1 flex justify-between items-end">
+                                <span className="font-bold text-gray-700">{cat.label}</span>
+                                <span className={`font-black text-lg text-gray-900`}>{score}/10</span>
+                              </div>
+                            </div>
+                            <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
+                              <div className={`h-full ${cat.colorObj.main} rounded-full transition-all duration-1000`} style={{ width: `${(parseFloat(score) / 10) * 100}%` }}></div>
+                            </div>
+                            <div className="bg-gray-50 p-4 rounded-2xl text-sm leading-relaxed text-gray-600 font-medium border border-gray-100">
+                               {isGeneratingInsights ? <Loader className="w-4 h-4 animate-spin text-gray-400"/> : (insights?.[`advice_${cat.id}`] || "الذكاء الاصطناعي يحلل بياناتك.")}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        };
+
+        const CalendarView = ({ entries, criteria, monthlyTitles, currentMonth, setCurrentMonth, goToDashboard, goToForm, goToDetails }) => {
+          const [calendarMode, setCalendarMode] = useState('grid');
+          const [sortOption, setSortOption] = useState('date_desc');
+          const [chartMetric, setChartMetric] = useState('average');
+          
+          const year = currentMonth.getFullYear();
+          const month = currentMonth.getMonth();
+          const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+          const mTitle = monthlyTitles[monthKey] || "شهر جديد";
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+
+          const allDays = useMemo(() => {
+            return [...Array(daysInMonth)].map((_, i) => {
+              const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`;
+              return { date: dateStr, dayNum: i + 1, label: String(i + 1), entry: entries?.[dateStr] };
+            });
+          }, [daysInMonth, year, month, entries]);
+
+          const sortedDays = [...allDays].sort((a, b) => {
+            if (sortOption === 'date_desc') return b.dayNum - a.dayNum;
+            if (sortOption === 'date_asc') return a.dayNum - b.dayNum;
+            if (sortOption === 'status') { if (a.entry && !b.entry) return -1; if (!a.entry && b.entry) return 1; return b.dayNum - a.dayNum; }
+            if (sortOption === 'score_desc') return (parseFloat(b.entry?.averageScore) || -1) - (parseFloat(a.entry?.averageScore) || -1);
+            if (sortOption === 'score_asc') return (parseFloat(a.entry?.averageScore) || 11) - (parseFloat(b.entry?.averageScore) || 11);
+            return 0;
+          });
+
+          const chartData = useMemo(() => {
+            return allDays.map(d => {
+              let score = 0;
+              if (d.entry) {
+                score = chartMetric === 'average' ? parseFloat(d.entry.averageScore || 0) : parseFloat(d.entry.scores?.[chartMetric] || 0);
+              }
+              return { ...d, displayScore: score };
+            });
+          }, [allDays, chartMetric]);
+
+          return (
+            <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
+              <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
+                <div className="flex justify-between items-center mb-4">
+                  <button onClick={() => setCurrentMonth(new Date(year, month - 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="w-5 h-5" /></button>
+                  <h1 className="text-xl font-extrabold text-gray-800">{monthNames[month]} {year}</h1>
+                  <button onClick={() => setCurrentMonth(new Date(year, month + 1, 1))} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="w-5 h-5" /></button>
+                </div>
+                <div className="text-center"><p className="text-gray-400 text-xs font-bold uppercase">اللقب</p><h2 className="text-lg font-bold text-gray-800 truncate">{mTitle}</h2></div>
+              </header>
+
+              <div className="px-5 mt-6 mb-6">
+                <div className="flex justify-between items-center mb-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
+                  <button onClick={goToDashboard} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition font-bold text-sm shrink-0">
+                    <Home className="w-4 h-4" /> الرئيسية
+                  </button>
+                  <div className="flex gap-1 flex-1 justify-center mx-2 shrink-0">
+                    <button onClick={() => setCalendarMode('grid')} className={`p-2 rounded-xl transition ${calendarMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="w-5 h-5" /></button>
+                    <button onClick={() => setCalendarMode('list')} className={`p-2 rounded-xl transition ${calendarMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="w-5 h-5" /></button>
+                    <button onClick={() => setCalendarMode('bar')} className={`p-2 rounded-xl transition ${calendarMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="w-5 h-5" /></button>
+                    <button onClick={() => setCalendarMode('line')} className={`p-2 rounded-xl transition ${calendarMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="w-5 h-5" /></button>
+                  </div>
+                  
+                  {calendarMode === 'list' && (
+                    <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="bg-gray-50 text-xs border-none outline-none focus:ring-2 focus:ring-blue-100 rounded-xl px-2 py-2 text-gray-600 font-bold w-[90px] shrink-0">
+                      <option value="date_desc">الأحدث</option><option value="date_asc">الأقدم</option>
+                      <option value="status">المنجزة</option><option value="score_desc">الأعلى</option><option value="score_asc">الأقل</option>
+                    </select>
+                  )}
+                  {(calendarMode === 'bar' || calendarMode === 'line') && (
+                     <select value={chartMetric} onChange={(e) => setChartMetric(e.target.value)} className="bg-blue-50 text-blue-700 text-xs border-none outline-none focus:ring-2 focus:ring-blue-200 rounded-xl px-2 py-2 font-bold max-w-[120px] shrink-0">
+                       <option value="average">التقييم الكلي</option>
+                       {criteria.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                     </select>
+                  )}
+                </div>
+
+                {calendarMode === 'grid' && (
+                  <div>
+                    <div className="grid grid-cols-7 gap-2 mb-2">{['أحد', 'إثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'].map(day => <div key={day} className="text-center text-xs font-bold text-gray-400">{day}</div>)}</div>
+                    <div className="grid grid-cols-7 gap-2">
+                      {[...Array(new Date(year, month, 1).getDay())].map((_, i) => <div key={`empty-${i}`} className="aspect-square"></div>)}
+                      {allDays.map(({ date, dayNum, entry }) => {
+                        const isToday = date === new Date().toISOString().split('T')[0];
+                        return (
+                          <button key={dayNum} onClick={() => entry ? goToDetails(date) : goToForm(date)} className={`relative aspect-square rounded-2xl flex flex-col items-center justify-center border-2 transition-transform hover:scale-105 ${getColorClass(entry?.averageScore)} ${isToday && !entry ? 'ring-2 ring-blue-500 border-transparent' : ''}`}>
+                            <span className={`text-base font-bold ${entry ? '' : 'opacity-70'}`}>{dayNum}</span>
+                            {entry && <span className="text-[10px] font-black mt-0.5 opacity-90">{entry.averageScore}</span>}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {calendarMode === 'list' && (
+                  <div className="flex flex-col gap-3">
+                    {sortedDays.map(({ date, dayNum, entry }) => (
+                      <button key={date} onClick={() => entry ? goToDetails(date) : goToForm(date)} className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all hover:scale-[1.02] ${entry ? 'bg-white border-gray-100 shadow-sm' : 'bg-gray-50 border-gray-200 border-dashed text-gray-400'}`}>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg ${getColorClass(entry?.averageScore)}`}>{dayNum}</div>
+                          <div className="text-right flex-1 overflow-hidden">
+                            <div className={`font-bold truncate w-full ${entry ? 'text-gray-800' : 'text-gray-400'}`}>{entry?.title || 'لم يُسجل'}</div>
+                            {entry && <div className="text-xs text-blue-500 font-bold">{Array.isArray(entry.tasks) ? entry.tasks.length : 0} مهام</div>}
+                          </div>
+                        </div>
+                        {entry && <div className="text-lg font-black bg-gray-50 px-3 py-1 rounded-lg text-gray-700 ml-2">{entry.averageScore}</div>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {calendarMode === 'bar' && <BarChartComponent data={chartData} onBarClick={(d) => goToDetails(d.date)} />}
+                {calendarMode === 'line' && <LineChartComponent data={chartData} totalItems={daysInMonth} onPointClick={(d) => goToDetails(d.date)} />}
+              </div>
+            </div>
+          );
+        };
+
+        const YearView = ({ entries, criteria, monthlyTitles, currentYear, setCurrentYear, goToDashboard, setCurrentMonth, setCurrentView }) => {
+          const [viewMode, setViewMode] = useState('grid');
+          const [yearSortOption, setYearSortOption] = useState('month_desc');
+          const [chartMetric, setChartMetric] = useState('average');
+          
+          const monthNames = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+          
+          const monthsData = useMemo(() => monthNames.map((name, index) => {
+            const monthPrefix = `${currentYear}-${String(index + 1).padStart(2, '0')}`;
+            const mEntries = Object.keys(entries || {}).filter(k => k.startsWith(monthPrefix)).map(k => entries[k]);
+            
+            let sumAvg = 0;
+            let criteriaSums = {};
+            criteria.forEach(c => criteriaSums[c.id] = 0);
+
+            mEntries.forEach(e => {
+               sumAvg += parseFloat(e.averageScore || 0);
+               criteria.forEach(c => { criteriaSums[c.id] += parseFloat(e.scores?.[c.id] || 0); });
+            });
+
+            const len = mEntries.length;
+            const avg = len > 0 ? (sumAvg / len).toFixed(1) : 0;
+            const avgCriteria = {};
+            if (len > 0) {
+               criteria.forEach(c => avgCriteria[c.id] = (criteriaSums[c.id] / len).toFixed(1));
+            }
+
+            const title = monthlyTitles[monthPrefix] || (len > 0 ? "يتم التحليل" : "فارغ");
+            return { index, name, label: name, dayNum: index + 1, avg: parseFloat(avg), avgCriteria, title, entriesCount: len, entry: len > 0 ? { averageScore: avg, title: title } : null };
+          }), [currentYear, entries, monthlyTitles, criteria]);
+
+          const sortedMonths = [...monthsData].sort((a, b) => {
+            if (yearSortOption === 'month_desc') return b.index - a.index;
+            if (yearSortOption === 'month_asc') return a.index - b.index;
+            if (yearSortOption === 'score_desc') return b.avg - a.avg;
+            if (yearSortOption === 'score_asc') return a.avg - b.avg;
+            return 0;
+          });
+
+          const chartData = useMemo(() => {
+            return monthsData.map(m => {
+              let score = 0;
+              if (m.entriesCount > 0) {
+                score = chartMetric === 'average' ? m.avg : parseFloat(m.avgCriteria[chartMetric] || 0);
+              }
+              return { ...m, displayScore: score };
+            });
+          }, [monthsData, chartMetric]);
+
+          return (
+            <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
+               <header className="bg-white p-6 pb-6 shadow-sm rounded-b-[2.5rem]">
+                <div className="flex justify-between items-center mb-4">
+                  <button onClick={() => setCurrentYear(currentYear - 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronRight className="w-5 h-5" /></button>
+                  <h1 className="text-xl font-extrabold text-gray-800">سنة {currentYear}</h1>
+                  <button onClick={() => setCurrentYear(currentYear + 1)} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ChevronLeft className="w-5 h-5" /></button>
+                </div>
+              </header>
+
+              <div className="px-5 mt-6 mb-6">
+                <div className="flex justify-between items-center mb-4 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
+                  <button onClick={goToDashboard} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-xl transition font-bold text-sm shrink-0">
+                    <Home className="w-4 h-4" /> الرئيسية
+                  </button>
+                  <div className="flex gap-1 flex-1 justify-center mx-2 shrink-0">
+                    <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl transition ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><Grid className="w-5 h-5" /></button>
+                    <button onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><AlignLeft className="w-5 h-5" /></button>
+                    <button onClick={() => setViewMode('bar')} className={`p-2 rounded-xl transition ${viewMode === 'bar' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><BarChart className="w-5 h-5" /></button>
+                    <button onClick={() => setViewMode('line')} className={`p-2 rounded-xl transition ${viewMode === 'line' ? 'bg-blue-100 text-blue-600' : 'text-gray-400 hover:bg-gray-50'}`}><LineChart className="w-5 h-5" /></button>
+                  </div>
+                  {viewMode === 'list' && (
+                    <select value={yearSortOption} onChange={(e) => setYearSortOption(e.target.value)} className="bg-gray-50 text-xs border-none outline-none focus:ring-2 focus:ring-blue-100 rounded-xl px-2 py-2 text-gray-600 font-bold max-w-[100px] shrink-0">
+                      <option value="month_desc">الأحدث</option><option value="month_asc">الأقدم</option>
+                      <option value="score_desc">الأعلى</option><option value="score_asc">الأقل</option>
+                    </select>
+                  )}
+                  {(viewMode === 'bar' || viewMode === 'line') && (
+                     <select value={chartMetric} onChange={(e) => setChartMetric(e.target.value)} className="bg-blue-50 text-blue-700 text-xs border-none outline-none focus:ring-2 focus:ring-blue-200 rounded-xl px-2 py-2 font-bold max-w-[120px] shrink-0">
+                       <option value="average">التقييم الكلي</option>
+                       {criteria.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
+                     </select>
+                  )}
+                </div>
+
+                {viewMode === 'grid' && (
+                   <div className="grid grid-cols-3 gap-3">
+                     {monthsData.map((m) => (
+                       <button key={m.index} onClick={() => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} className={`aspect-square rounded-2xl p-3 flex flex-col items-center justify-center border-2 transition-transform hover:scale-105 ${getColorClass(m.avg)}`}>
+                         <span className="font-bold text-sm mb-1">{m.name}</span>
+                         {m.entriesCount > 0 && <span className="text-lg font-black">{m.avg}</span>}
+                       </button>
+                     ))}
+                   </div>
+                )}
+                
+                {viewMode === 'list' && (
+                   <div className="flex flex-col gap-3">
+                    {sortedMonths.map((m) => (
+                      <button key={m.index} onClick={() => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all hover:scale-[1.02] ${m.entriesCount > 0 ? 'bg-white border-gray-100 shadow-sm' : 'bg-gray-50 border-gray-200 border-dashed text-gray-400'}`}>
+                        <div className="flex items-center gap-4">
+                          <div className={`w-14 h-14 rounded-xl flex items-center justify-center font-black text-sm ${getColorClass(m.avg)}`}>{m.name}</div>
+                          <div className="text-right flex-1 overflow-hidden">
+                            <div className={`font-bold truncate w-full ${m.entriesCount > 0 ? 'text-gray-800' : 'text-gray-400'}`}>{m.title}</div>
+                            <div className="text-xs text-gray-500">{m.entriesCount} أيام مسجلة</div>
+                          </div>
+                        </div>
+                        {m.entriesCount > 0 && <div className="text-lg font-black bg-gray-50 px-3 py-1 rounded-lg text-gray-700 ml-2">{m.avg}</div>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {viewMode === 'bar' && <BarChartComponent data={chartData} onBarClick={(m) => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} />}
+                {viewMode === 'line' && <LineChartComponent data={chartData} totalItems={12} onPointClick={(m) => { setCurrentMonth(new Date(currentYear, m.index, 1)); setCurrentView('calendar'); }} />}
+              </div>
+            </div>
+          );
+        };
+
+        const EntryFormView = ({ selectedDate, setSelectedDate, entries, criteria, saveEntry, goToCalendar, goToDetails }) => {
+          const [transcript, setTranscript] = useState("");
+          const [isRecording, setIsRecording] = useState(false);
+          const [recordingTime, setRecordingTime] = useState(0);
+          const [audioData, setAudioData] = useState(null);
+          const [isAnalyzing, setIsAnalyzing] = useState(false);
+          const [error, setError] = useState(null);
+          
+          const mediaRecorderRef = useRef(null);
+          const timerRef = useRef(null);
+          const recognitionRef = useRef(null);
+
+          useEffect(() => {
+            setTranscript(""); 
+            setAudioData(null);
+            setError(null);
+            return () => {
+              if (timerRef.current) clearInterval(timerRef.current);
+              if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') mediaRecorderRef.current.stop();
+            };
+          }, [selectedDate]);
+
+          useEffect(() => {
+            try {
+              const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+              if (SpeechRecognition) {
+                recognitionRef.current = new SpeechRecognition();
+                recognitionRef.current.continuous = true;
+                recognitionRef.current.interimResults = true;
+                recognitionRef.current.lang = 'ar-SA';
+                recognitionRef.current.onresult = (e) => {
+                    let final = '';
+                    for (let i = e.resultIndex; i < e.results.length; ++i) if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+                    if (final) setTranscript(prev => prev + final);
+                };
+                recognitionRef.current.onerror = () => setIsRecording(false);
+                recognitionRef.current.onend = () => setIsRecording(false);
+              }
+            } catch (e) { }
+            return () => { if (recognitionRef.current) recognitionRef.current.stop(); };
+          }, []);
+
+          const toggleRecording = async () => {
+            if (!recognitionRef.current) return setError("المتصفح لا يدعم التسجيل. استخدم الكتابة.");
+            if (isRecording) {
+              if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') mediaRecorderRef.current.stop();
+              if (recognitionRef.current) recognitionRef.current.stop();
+              clearInterval(timerRef.current);
+              setIsRecording(false);
+            } else { 
+              try { 
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                mediaRecorderRef.current = mediaRecorder;
+                const chunks = [];
+
+                mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+                mediaRecorder.onstop = () => {
+                  stream.getTracks().forEach(t => t.stop());
+                  let mimeType = mediaRecorder.mimeType.split(';')[0];
+                  if (!mimeType) mimeType = 'audio/webm';
+                  
+                  const blob = new Blob(chunks, { type: mimeType });
+                  const reader = new FileReader();
+                  reader.readAsDataURL(blob);
+                  reader.onloadend = () => {
+                    const base64data = reader.result.split(',')[1];
+                    setAudioData({ base64: base64data, mimeType: mimeType });
+                  };
+                };
+
+                setAudioData(null); setRecordingTime(0);
+                mediaRecorder.start(); setIsRecording(true); setError(null);
+                timerRef.current = setInterval(() => setRecordingTime(prev => prev + 1), 1000);
+              } catch(e) { 
+                if(recognitionRef.current) {
+                    try { recognitionRef.current.start(); setIsRecording(true); setError(null); } catch(err) { setIsRecording(false); }
+                } else {
+                    setIsRecording(false); setError("لا يمكن الوصول للميكروفون.");
+                }
+              } 
+            }
+          };
+
+          const handleAnalyze = async () => {
+            if (!transcript.trim() && !audioData) return setError("الرجاء إدخال نص أو تسجيل مقطع صوتي.");
+            
+            if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === "") {
+                return setError("عذراً، يرجى إعداد مفتاح الذكاء الاصطناعي (API Key) في الكود لكي تعمل هذه الميزة.");
+            }
+
+            setIsAnalyzing(true); setError(null);
+            try {
+              const dObj = new Date(selectedDate);
+              const recentKeys = Object.keys(entries).filter(k => new Date(k) < dObj).sort((a,b) => new Date(b) - new Date(a)).slice(0, 5);
+              const recentEntries = recentKeys.map(k => ({ date: k, ...entries[k] }));
+              
+              const existingText = entries[selectedDate]?.text || "";
+              const combinedTextForAI = existingText ? `[الأحداث السابقة]:\n${existingText}\n\n[إضافات جديدة]:\n${transcript}` : transcript;
+
+              const aiResult = await analyzeJournalWithAI(combinedTextForAI, audioData, recentEntries, criteria);
+              
+              let scoresObj = {}, detailsObj = {};
+              criteria.forEach(c => {
+                scoresObj[c.id] = parseInt(aiResult?.[`score_${c.id}`]) || 0;
+                detailsObj[c.id] = aiResult?.[`detail_${c.id}`] || "";
+              });
+              
+              const newAudioTranscript = audioData ? (aiResult.transcript || "") : "";
+              let finalSavedText = existingText;
+              if (transcript.trim() || newAudioTranscript.trim()) {
+                 const addition = `${transcript} ${newAudioTranscript}`.trim();
+                 finalSavedText = existingText ? `${existingText}\n\n[إضافة]: ${addition}` : addition;
+              }
+
+              await saveEntry(selectedDate, {
+                text: finalSavedText, scores: scoresObj, categoryDetails: detailsObj, tasks: Array.isArray(aiResult?.tasks) ? aiResult.tasks : [],
+                title: aiResult?.title || "يومياتي", comparison: aiResult?.comparison || "لا تتوفر مقارنة حالياً.", tips: aiResult?.tips || "استمر في تدوين يومياتك بانتظام.",
+                averageScore: calculateAverageScore(scoresObj, criteria), chatHistory: entries[selectedDate]?.chatHistory || [] 
+              });
+            } catch (err) { setError(`خطأ: ${err.message}`); } finally { setIsAnalyzing(false); }
+          };
+
+          const isExpired = entries?.[selectedDate] && (Date.now() - (entries[selectedDate].timestamp || Date.now())) > (24 * 60 * 60 * 1000);
+          if (isExpired) {
+            return (
+              <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
+                <Lock className="w-16 h-16 text-gray-400 mb-4 mx-auto" />
+                <h2 className="text-xl font-bold text-gray-800 mb-6">انتهى وقت التعديل</h2>
+                <button onClick={() => goToDetails(selectedDate)} className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-500/30">عرض اليوميات</button>
+              </div>
+            );
+          }
+
+          const handleDateChange = (e) => {
+            const newDateStr = e.target.value || new Date().toISOString().split('T')[0];
+            setSelectedDate(newDateStr);
+            if (entries[newDateStr]) goToDetails(newDateStr);
+          };
+
+          const formatTime = (sec) => `${Math.floor(sec / 60).toString().padStart(2, '0')}:${(sec % 60).toString().padStart(2, '0')}`;
+
+          return (
+            <div className="flex-1 overflow-y-auto bg-slate-50 relative flex flex-col pb-10">
+              <header className="bg-white p-4 shadow-sm flex items-center justify-between border-b border-gray-100 shrink-0">
+                <button onClick={goToCalendar} className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"><ArrowRight className="w-5 h-5" /></button>
+                <div className="flex flex-col items-center bg-gray-50 px-4 py-1.5 rounded-xl border border-gray-200">
+                   <label className="text-[10px] font-bold text-gray-400 uppercase">تاريخ اليوميات</label>
+                   <input type="date" value={selectedDate} onChange={handleDateChange} className="bg-transparent text-sm border-none outline-none font-black text-blue-600 cursor-pointer" />
+                </div>
+                <div className="w-9"></div>
+              </header>
+
+              <div className="p-6 flex-1 flex flex-col gap-6">
+                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 flex-1 flex flex-col items-center relative min-h-[300px]">
+                  
+                  {entries[selectedDate] && (
+                    <div className="absolute top-4 w-[90%] bg-blue-50 text-blue-700 py-2 px-3 rounded-xl text-xs font-bold text-center border border-blue-100 z-20">
+                      أنت تقوم بإضافة أحداث جديدة ليوم مسجل مسبقاً
+                    </div>
+                  )}
+
+                  {isRecording && <div className="absolute top-1/3 flex items-center justify-center pointer-events-none opacity-20"><div className="w-40 h-40 bg-red-500 rounded-full animate-ping absolute"></div></div>}
+                  
+                  <button onClick={toggleRecording} className={`relative z-10 w-24 h-24 rounded-full flex items-center justify-center transition-all duration-500 shadow-xl shrink-0 mt-8 ${isRecording ? 'bg-red-500 text-white scale-110' : 'bg-slate-900 text-white hover:bg-slate-800 hover:scale-105'}`}>
+                    {isRecording ? <MicOff className="w-10 h-10" /> : <Mic className="w-10 h-10" />}
+                  </button>
+                  
+                  <p className="mt-4 text-gray-400 font-bold text-sm z-10 shrink-0">
+                    {isRecording ? `جاري التسجيل... (${formatTime(recordingTime)})` : 'تحدث أو اكتب أحداث اليوم'}
+                  </p>
+
+                  {audioData && !isRecording && (
+                    <div className="mt-4 w-full bg-blue-50 border border-blue-100 p-4 rounded-2xl flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <PlayCircle className="w-8 h-8 text-blue-500" />
+                        <div><p className="text-sm font-bold text-blue-900">مقطع صوتي جاهز</p><p className="text-xs text-blue-600">سيتم تفريغه وتحليله تلقائياً</p></div>
+                      </div>
+                      <button onClick={() => setAudioData(null)} className="p-2 text-red-500 hover:bg-red-100 rounded-xl transition"><Trash className="w-5 h-5"/></button>
+                    </div>
+                  )}
+
+                  <textarea value={transcript} onChange={(e) => setTranscript(e.target.value)} placeholder="أضف تفاصيل اليوم هنا..." className="mt-6 w-full flex-1 bg-slate-50 rounded-2xl p-5 text-gray-700 resize-none border-none focus:ring-2 focus:ring-blue-100 z-10 text-base leading-relaxed font-medium shadow-inner" />
+                </div>
+                
+                {error && <div className="bg-red-50 p-4 rounded-2xl flex gap-3 shrink-0"><AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" /><div><p className="text-red-700 text-sm font-bold">تنبيه</p><p className="text-red-600 text-xs font-medium" dir="ltr">{error}</p></div></div>}
+                
+                <button onClick={handleAnalyze} disabled={isAnalyzing || (!transcript.trim() && !audioData)} className="bg-blue-600 text-white w-full py-5 rounded-2xl font-black text-lg flex justify-center gap-2 shadow-xl shadow-blue-500/50 disabled:opacity-50 hover:bg-blue-700 shrink-0">
+                  {isAnalyzing ? <><Loader className="w-6 h-6 animate-spin" /> جاري التحليل والإضافة...</> : (error ? <><AlertCircle className="w-5 h-5"/> إعادة المحاولة</> : 'حفظ وتحليل')}
+                </button>
+
+                {entries?.[selectedDate]?.tasks && entries[selectedDate].tasks.length > 0 && (
+                  <div className="bg-indigo-50 p-5 rounded-3xl border border-indigo-100 shadow-sm shrink-0 mt-2">
+                    <h3 className="text-indigo-800 font-black text-sm mb-3 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4" /> أحداث تم تسجيلها سابقاً اليوم:
+                    </h3>
+                    <ul className="space-y-2">
+                      {entries[selectedDate].tasks.map((task, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-indigo-900 text-sm font-medium leading-relaxed">
+                          <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full shrink-0 mt-2"></span>
+                          <span>{task}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        };
+
+        const EntryDetailsView = ({ selectedDate, entries, criteria, goToCalendar, goToForm, updateEntryData }) => {
+          const entry = entries?.[selectedDate];
+          const [chatInput, setChatInput] = useState("");
+          const [isChatting, setIsChatting] = useState(false);
+          const [isDeletingTasks, setIsDeletingTasks] = useState(false);
+          const chatEndRef = useRef(null);
+          const topRef = useRef(null);
+          const prevChatLength = useRef(entry?.chatHistory?.length || 0);
+
+          useEffect(() => { topRef.current?.scrollIntoView({ behavior: 'instant' }); }, [selectedDate]);
+
+          useEffect(() => { 
+            if (entry?.chatHistory && entry.chatHistory.length > prevChatLength.current) {
+              chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); 
+            }
+            prevChatLength.current = entry?.chatHistory?.length || 0;
+          }, [entry?.chatHistory]);
+
+          if (!entry) return <div className="p-6 text-center mt-20 font-bold">لا يوجد سجل متاح</div>;
+
+          const { scores = {}, categoryDetails = {}, tasks = [], title = "بدون لقب", averageScore = "0.0", chatHistory = [], comparison = "", tips = "" } = entry;
+
+          const handleSendMessage = async () => {
+            if (!chatInput.trim()) return;
+            const userMsg = chatInput;
+            setChatInput("");
+            
+            const updatedHistory = [...(chatHistory || []), { sender: 'user', text: userMsg }];
+            updateEntryData(selectedDate, { chatHistory: updatedHistory });
+            
+            setIsChatting(true);
+            try {
+              const aiResponse = await chatWithJournalAI(entry, updatedHistory, userMsg, criteria);
+              const finalHistory = [...updatedHistory, { sender: 'ai', text: aiResponse.reply || "تم التحديث بنجاح." }];
+              
+              let newScores = { ...scores };
+              criteria.forEach(c => { if (aiResponse[`score_${c.id}`] !== undefined) newScores[c.id] = aiResponse[`score_${c.id}`]; });
+
+              let newTasks = aiResponse.tasks && Array.isArray(aiResponse.tasks) ? aiResponse.tasks : tasks;
+
+              updateEntryData(selectedDate, { 
+                chatHistory: finalHistory, scores: newScores, tasks: newTasks,
+                title: aiResponse.title || title, averageScore: calculateAverageScore(newScores, criteria)
+              });
+            } catch (err) {
+              updateEntryData(selectedDate, { chatHistory: [...updatedHistory, { sender: 'ai', text: "عذراً، حدث خطأ في الاتصال." }] });
+            } finally { setIsChatting(false); }
+          };
+
+          const removeTask = (indexToRemove) => {
+            const newTasks = tasks.filter((_, i) => i !== indexToRemove);
+            updateEntryData(selectedDate, { tasks: newTasks });
+          };
+
+          return (
+            <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-10">
+              <div ref={topRef} />
+              <header className={`${getColorClass(averageScore)} p-6 pt-8 rounded-b-[3rem] shadow-xl text-center relative z-20`}>
+                <div className="flex justify-between mb-4">
+                   <button onClick={goToCalendar} className="p-2 bg-black/10 rounded-full hover:bg-black/20 text-white"><ArrowRight className="w-6 h-6" /></button>
+                   <div className="flex gap-2">
+                     <button onClick={() => goToForm(selectedDate)} className="p-2 bg-black/10 rounded-full hover:bg-black/20 text-white" title="إضافة لليوم">
+                       <Plus className="w-5 h-5" />
+                     </button>
+                   </div>
+                </div>
+                <div className="text-white/80 text-sm font-bold tracking-widest mb-2">{selectedDate}</div>
+                <h2 className="text-2xl font-black text-white mb-4 leading-tight text-wrap break-words px-2">"{title}"</h2>
+                <div className="inline-flex items-center justify-center bg-white/20 px-6 py-2 rounded-full text-white font-black text-xl backdrop-blur-md shadow-inner">{averageScore} / 10</div>
+              </header>
+
+              <div className="px-4 -mt-6 z-10 flex flex-col gap-6 relative">
+                <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 pt-10">
+                  <div className="flex justify-between items-center mb-4">
+                     <div className="flex items-center gap-3">
+                       <h3 className="text-gray-800 font-black text-lg flex items-center gap-2"><CheckCircle className="w-5 h-5 text-blue-500"/> ملخص الإنجازات</h3>
+                       <button onClick={() => setIsDeletingTasks(!isDeletingTasks)} className={`p-1.5 rounded-lg transition-colors ${isDeletingTasks ? 'bg-green-100 text-green-700' : 'bg-red-50 text-red-500 hover:bg-red-100'}`} title="تعديل المهام">
+                         {isDeletingTasks ? <Check className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+                       </button>
+                     </div>
+                     <div className="bg-blue-50 text-blue-600 font-black px-3 py-1 rounded-lg text-sm">{Array.isArray(tasks) ? tasks.length : 0} مهام</div>
+                  </div>
+                  {Array.isArray(tasks) && tasks.length > 0 ? (
+                    <ul className="space-y-3">
+                      {tasks.map((task, idx) => (
+                        <li key={idx} className="flex items-start gap-3 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                          {isDeletingTasks ? (
+                             <button onClick={() => removeTask(idx)} className="w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center shrink-0 hover:bg-red-200 transition-colors"><X className="w-4 h-4" /></button>
+                          ) : (
+                             <span className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-xs font-bold text-gray-400 shrink-0 border border-gray-200">{idx+1}</span>
+                          )}
+                          <span className="text-gray-700 font-medium text-sm pt-0.5 leading-relaxed">{task}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p className="text-gray-400 text-sm">لم يتم تسجيل مهام.</p>}
+                </div>
+
+                <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+                  <h3 className="text-gray-800 font-black text-lg mb-5 flex items-center gap-2"><Activity className="w-5 h-5 text-blue-500" /> التحليل التفصيلي</h3>
+                  <div className="flex flex-col gap-6">
+                    {criteria.map(cat => {
+                      const IconComp = IconMap[cat.icon] || Star;
+                      return (
+                        <div key={cat.id} className="relative">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className={`p-2 rounded-xl shadow-md ${cat.colorObj.main}`}><IconComp className="w-5 h-5 text-white" /></div>
+                            <div className="flex-1 flex justify-between items-end"><span className="font-bold text-gray-700">{cat.label}</span><span className={`font-black text-lg text-gray-800`}>{scores[cat.id]||0}/10</span></div>
+                          </div>
+                          <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden mb-2">
+                            <div className={`h-full ${cat.colorObj.main} rounded-full transition-all duration-1000`} style={{ width: `${((scores[cat.id]||0) / 10) * 100}%` }}></div>
+                          </div>
+                          <div className={`${cat.colorObj.light} p-3 rounded-xl text-sm leading-relaxed text-gray-700 font-medium border border-white`}>{categoryDetails[cat.id] || "لا يوجد تحليل."}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  {comparison && (
+                    <div className="bg-blue-50 p-5 rounded-3xl border border-blue-100 shadow-sm">
+                      <h3 className="text-blue-800 font-black text-sm mb-2 flex items-center gap-2"><TrendingUp className="w-4 h-4"/> مقارنة وتطور</h3>
+                      <p className="text-blue-700 text-sm leading-relaxed font-medium">{comparison}</p>
+                    </div>
+                  )}
+                  {tips && (
+                    <div className="bg-amber-50 p-5 rounded-3xl border border-amber-100 shadow-sm">
+                      <h3 className="text-amber-800 font-black text-sm mb-2 flex items-center gap-2"><Lightbulb className="w-4 h-4"/> اقتراحات للتحسين</h3>
+                      <p className="text-amber-700 text-sm leading-relaxed font-medium">{tips}</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col overflow-hidden mb-6 mt-2">
+                  <div className="bg-slate-900 p-4 flex items-center gap-3">
+                    <MessageSquare className="w-5 h-5 text-blue-400" />
+                    <h3 className="text-white font-bold text-sm">الدردشة وتعديل التقييم</h3>
+                  </div>
+                  
+                  <div className="p-4 bg-slate-50 min-h-[150px] max-h-[300px] overflow-y-auto flex flex-col gap-3">
+                    {(!chatHistory || chatHistory.length === 0) && (
+                      <div className="text-center text-gray-400 font-medium text-xs my-auto">
+                        هل نسيت شيئاً؟ تحدث معي لتعديل يومك وقائمة مهامك!
+                      </div>
+                    )}
+                    {chatHistory && chatHistory.map((msg, idx) => (
+                      <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[85%] p-3 rounded-2xl text-sm font-medium leading-relaxed ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-tl-sm' : 'bg-white border border-gray-200 text-gray-800 rounded-tr-sm shadow-sm'}`}>
+                          {msg.text}
+                        </div>
+                      </div>
+                    ))}
+                    {isChatting && (
+                      <div className="flex justify-start">
+                        <div className="bg-white border border-gray-200 text-gray-500 p-3 rounded-2xl rounded-tr-sm shadow-sm flex items-center gap-2 text-sm">
+                          <Loader className="w-4 h-4 animate-spin" /> جاري التفكير...
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  <div className="p-3 bg-white border-t border-gray-100 flex gap-2">
+                    <input 
+                      type="text" value={chatInput} onChange={e => setChatInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+                      placeholder="أخبرني المزيد لإضافته أو تعديله..."
+                      className="flex-1 bg-gray-100 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
+                    />
+                    <button onClick={handleSendMessage} disabled={isChatting || !chatInput.trim()} className="bg-blue-600 text-white p-2.5 rounded-xl disabled:opacity-50 hover:bg-blue-700 transition">
+                      <Send className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          );
+        };
+
+        // ==========================================
+        // 8. المكون الرئيسي والتطبيق
+        // ==========================================
+        function MainApp({ user }) {
+          const [entries, setEntries] = useState({});
+          const [monthlyTitles, setMonthlyTitles] = useState({});
+          const [criteria, setCriteria] = useState(defaultCriteria);
+          const [currentView, setCurrentView] = useState('dashboard');
+          const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+          const [currentMonth, setCurrentMonth] = useState(new Date());
+          const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+          const [isLoadingData, setIsLoadingData] = useState(true);
+
+          useEffect(() => {
+            if (!user || !db) return;
+            
+            const unsubEntries = db.collection(`artifacts/${appIdStr}/users/${user.uid}/entries`).onSnapshot((snapshot) => {
+              const loadedEntries = {};
+              snapshot.forEach(doc => { loadedEntries[doc.id] = doc.data(); });
+              setEntries(loadedEntries);
+              setIsLoadingData(false);
+            }, (err) => { console.error("Error loading entries", err); setIsLoadingData(false); });
+
+            const unsubSettings = db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).onSnapshot((docSnap) => {
+              if (docSnap.exists) {
+                const data = docSnap.data();
+                if (data.criteria && Array.isArray(data.criteria) && data.criteria.length > 0) setCriteria(data.criteria);
+                if (data.monthlyTitles) setMonthlyTitles(data.monthlyTitles);
+              }
+            });
+
+            return () => { unsubEntries(); unsubSettings(); };
+          }, [user]);
+
+          const updateEntryData = async (date, updatedData) => {
+            const newData = { ...entries[date], ...updatedData };
+            setEntries(prev => ({ ...prev, [date]: newData }));
+            try { await db.doc(`artifacts/${appIdStr}/users/${user.uid}/entries/${date}`).set(newData, { merge: true }); } catch(e) {}
+          };
+
+          const saveEntryData = async (date, data) => {
+            const newEntries = { ...entries, [date]: { ...data, timestamp: Date.now() } };
+            setEntries(newEntries);
+            setSelectedDate(date);
+            setCurrentView('details');
+
+            try {
+              await db.doc(`artifacts/${appIdStr}/users/${user.uid}/entries/${date}`).set({ ...data, timestamp: Date.now() }, { merge: true });
+
+              const dateObj = new Date(date);
+              if (!isNaN(dateObj.getTime())) {
+                const mKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+                const mEntries = Object.keys(newEntries).filter(k => k.startsWith(mKey)).map(k => ({ date: k, ...newEntries[k] }));
+                if (mEntries.length > 0) {
+                  const text = mEntries.map(e => `- ${e.date}: [${e.averageScore}/10] ${e.title}`).join('\n');
+                  generateMonthlyTitleAI(text).then(async newTitle => {
+                    if (newTitle) {
+                      const newTitles = { ...monthlyTitles, [mKey]: newTitle };
+                      setMonthlyTitles(newTitles);
+                      await db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).set({ monthlyTitles: newTitles }, { merge: true });
+                    }
+                  }).catch(()=>{});
+                }
+              }
+            } catch (e) { }
+          };
+
+          const saveCriteriaData = async (newCriteria) => {
+            setCriteria(newCriteria);
+            try { await db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).set({ criteria: newCriteria }, { merge: true }); } catch(e) {}
+          };
+
+          if (isLoadingData) {
+            return <div className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center"><Loader className="w-10 h-10 animate-spin text-blue-500" /></div>;
+          }
+
+          return (
+            <div className="max-w-md mx-auto h-screen bg-slate-100 shadow-2xl font-sans relative flex flex-col overflow-hidden" dir="rtl">
+              {currentView === 'dashboard' && <DashboardView entries={entries} criteria={criteria} goToCalendar={() => {setCurrentMonth(new Date()); setCurrentView('calendar');}} goToYear={() => {setCurrentYear(new Date().getFullYear()); setCurrentView('year');}} goToSettings={() => setCurrentView('settings')} />}
+              {currentView === 'settings' && <SettingsView criteria={criteria} saveCriteria={saveCriteriaData} goToDashboard={() => setCurrentView('dashboard')} />}
+              {currentView === 'calendar' && <CalendarView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} goToDashboard={() => setCurrentView('dashboard')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
+              {currentView === 'year' && <YearView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentYear={currentYear} setCurrentYear={setCurrentYear} goToDashboard={() => setCurrentView('dashboard')} setCurrentMonth={setCurrentMonth} setCurrentView={setCurrentView} />}
+              {currentView === 'form' && <EntryFormView selectedDate={selectedDate} setSelectedDate={setSelectedDate} entries={entries} criteria={criteria} saveEntry={saveEntryData} goToCalendar={() => setCurrentView('calendar')} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
+              {currentView === 'details' && <EntryDetailsView selectedDate={selectedDate} entries={entries} criteria={criteria} goToCalendar={() => setCurrentView('calendar')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} updateEntryData={updateEntryData} />}
+
+              {currentView === 'dashboard' && (
+                <div className="absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none z-50">
+                  <button onClick={() => {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    setSelectedDate(todayStr);
+                    if (entries[todayStr]) setCurrentView('details'); else setCurrentView('form');    
+                  }} className="pointer-events-auto flex items-center gap-2 bg-blue-600 text-white px-8 py-4 rounded-full shadow-2xl shadow-blue-500/50 hover:bg-blue-700 transition-transform transform hover:-translate-y-1 active:scale-95">
+                    <Plus className="w-6 h-6" /> <span className="font-bold text-lg tracking-wide">إدخال اليوم</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        function App() {
+          const [user, setUser] = useState(null);
+          const [authLoading, setAuthLoading] = useState(true);
+
+          useEffect(() => {
+            if (!auth) {
+              setAuthLoading(false);
+              return;
+            }
+            const unsubscribe = auth.onAuthStateChanged((u) => {
+              setUser(u);
+              setAuthLoading(false);
+            });
+            return () => unsubscribe();
+          }, []);
+
+          return (
+            <ErrorBoundary>
+              {authLoading ? (
+                <div className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center"><Loader className="w-10 h-10 animate-spin text-blue-500" /></div>
+              ) : user ? (
+                <MainApp user={user} />
+              ) : (
+                <AuthView />
+              )}
+            </ErrorBoundary>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
