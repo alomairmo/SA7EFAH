@@ -196,7 +196,51 @@
         }
 
         // ==========================================
-        // 4. الإعدادات والمعايير الافتراضية
+        // 4. استكشاف الذكاء الاصطناعي التلقائي (محمي بالـ Cache)
+        // ==========================================
+        const getValidGeminiModel = async (apiKey) => {
+          if (!apiKey) throw new Error("API_KEY_MISSING");
+          
+          // استخدام الكاش لتجنب استهلاك الطلبات وحل مشكلة Quota
+          const cacheKey = 'gemini_model_cache_' + apiKey.substring(0, 10);
+          if (window.discoveredModelCache) return window.discoveredModelCache;
+          
+          const localCache = localStorage.getItem(cacheKey);
+          if (localCache) {
+             window.discoveredModelCache = localCache;
+             return localCache;
+          }
+
+          try {
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            const data = await res.json();
+            
+            if (data.error) throw new Error(data.error.message);
+
+            if (data.models && data.models.length > 0) {
+              const validModels = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
+              let selected = validModels.find(m => m.name === 'models/gemini-1.5-flash') ||
+                             validModels.find(m => m.name.includes("1.5-flash")) ||
+                             validModels.find(m => m.name.includes("flash")) ||
+                             validModels.find(m => m.name.includes("pro")) ||
+                             validModels[0];
+              
+              if (selected) {
+                const modelName = selected.name.replace('models/', '');
+                window.discoveredModelCache = modelName;
+                localStorage.setItem(cacheKey, modelName); // حفظ المحرك المتاح
+                return modelName;
+              }
+            }
+            throw new Error("المفتاح لا يدعم توليد النصوص.");
+          } catch(e) { 
+            if (e.message === "API_KEY_MISSING") throw e;
+            return "gemini-pro"; // احتياطي
+          }
+        };
+
+        // ==========================================
+        // 5. الإعدادات والمعايير الافتراضية
         // ==========================================
         const IconMap = { Brain, Star, Heart, Users, Briefcase, Activity, Book, Coffee, Music, Sun, Moon, Zap, Shield, Target, Smile, Compass, Feather, Flame };
         
@@ -235,10 +279,9 @@
           },
         ];
 
-        // --- إصلاح مشكلة قراءة الأيام القديمة التي لا تحتوي على فروع ---
+        // --- توافق رجعي للأيام القديمة التي لا تحتوي على فروع ---
         const getCategoryScore = (entryScores, category) => {
             if (!entryScores) return 0;
-            // إذا كان المعيار يحتوي على فروع، نقوم بجمع الموجود منها فقط لهذا اليوم
             if (category.subCriteria && category.subCriteria.length > 0) {
                let sum = 0, count = 0;
                category.subCriteria.forEach(sub => {
@@ -247,10 +290,8 @@
                        count++;
                    }
                });
-               // إذا وجدنا فروع مسجلة، نرجع متوسطها
                if (count > 0) return sum / count;
             }
-            // في حال لم نجد فروع مسجلة (لأنه يوم قديم)، أو المعيار ليس له فروع أصلاً: نجلب التقييم الرئيسي
             return Number(entryScores[category.id]) || 0;
         };
 
@@ -275,7 +316,6 @@
           } catch (e) { return ""; }
         };
 
-        // --- دوال الاتصال بالذكاء الاصطناعي مع رسالة تجاوز الحد المسموح ---
         const fetchWithRetry = async (url, payload, retries = 3) => {
           let lastError = null;
           for (let attempt = 1; attempt <= retries; attempt++) {
@@ -284,7 +324,6 @@
               const data = await response.json();
               
               if (!response.ok) {
-                  // إذا كان الخطأ بسبب تجاوز الحد المسموح (الكوتا)
                   if(data.error?.message?.includes("Quota") || response.status === 429) {
                       throw new Error("تجاوزت حد الطلبات المجانية. يرجى الانتظار لمدة دقيقة والمحاولة مجدداً.");
                   }
@@ -296,7 +335,6 @@
               return JSON.parse(cleanJSONString(resultText));
             } catch (err) {
               lastError = err;
-              // إذا كان الخطأ تجاوز الحد المجاني، لا نحاول مجدداً حتى لا يتم حظر المفتاح
               if (err.message.includes("تجاوزت حد الطلبات المجانية")) break; 
               if (attempt === retries) break;
               await new Promise(res => setTimeout(res, 1500 * attempt));
@@ -305,10 +343,30 @@
           throw lastError;
         };
 
+        // --- مولد الـ Payload المتوافق مع جميع المحركات القديمة والحديثة ---
+        const buildSafePayload = (modelName, systemPrompt, userParts, schemaProperties, requiredKeys) => {
+            const isAdvanced = modelName.includes("1.5") || modelName.includes("2.0") || modelName.includes("flash");
+            let payload = { contents: [{ role: "user", parts: userParts }] };
+
+            if (isAdvanced) {
+                payload.systemInstruction = { parts: [{ text: systemPrompt }] };
+                if (schemaProperties) {
+                    payload.generationConfig = { 
+                        responseMimeType: "application/json", 
+                        responseSchema: { type: "OBJECT", properties: schemaProperties, required: requiredKeys } 
+                    };
+                }
+            } else {
+                const reqText = requiredKeys ? `\nيجب إرجاع JSON حصراً بالمفاتيح التالية: ${requiredKeys.join(', ')}` : "\nأرجع JSON فقط.";
+                payload.contents[0].parts.unshift({ text: "تعليمات النظام:\n" + systemPrompt + reqText + "\n\n" });
+            }
+            return payload;
+        };
+
         const analyzeJournalWithAI = async (combinedText, audioData, recentEntries, criteria, apiKey) => {
           if (!apiKey) throw new Error("مفتاح الذكاء الاصطناعي مفقود.");
-          // استخدام محرك ثابت 1.5 flash لتوفير طلبات الـ API وتجنب خطأ not found
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+          const modelName = await getValidGeminiModel(apiKey);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
           
           let recentContext = "لا توجد سجلات سابقة للمقارنة.";
           if (recentEntries && recentEntries.length > 0) {
@@ -346,7 +404,7 @@
           const systemPrompt = `أنت محلل حياة. حلل يوميات المستخدم بدقة. 
 اللقب: 4 كلمات كحد أقصى.
 المهام: استخرجها جميعاً كمصفوفة نصوص قصيرة.
-التقييم: 0-10 لكل معيار أو معيار فرعي مبين أدناه مع تبرير بسطر واحد.
+التقييم: 0-10 لكل معيار مبين أدناه مع تبرير بسطر واحد.
 ${recentContext}\n\n${criteriaPrompt}`;
 
           const parts = [];
@@ -356,17 +414,14 @@ ${recentContext}\n\n${criteriaPrompt}`;
             parts.push({ text: "\nفرّغ الصوت وحلله مع النص." });
           } else if (!combinedText || combinedText.trim() === "") throw new Error("لا يوجد نص أو صوت.");
 
-          const payload = {
-            contents: [{ role: "user", parts: parts }],
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: dynamicProperties, required: requiredKeys } }
-          };
+          const payload = buildSafePayload(modelName, systemPrompt, parts, dynamicProperties, requiredKeys);
           return await fetchWithRetry(url, payload);
         };
 
         const chatWithJournalAI = async (currentEntry, chatHistory, userMessage, criteria, apiKey) => {
           if (!apiKey) throw new Error("مفتاح الذكاء الاصطناعي مفقود.");
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+          const modelName = await getValidGeminiModel(apiKey);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
           const historyContext = chatHistory.map(msg => `${msg.sender === 'user' ? 'المستخدم' : 'الذكاء الاصطناعي'}: ${msg.text}`).join('\n');
           
           let scoresContext = "";
@@ -374,6 +429,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
             reply: { type: "STRING" }, title: { type: "STRING", description: "تحديث اللقب إن لزم الأمر (أقصى 4 كلمات)" },
             tasks: { type: "ARRAY", items: { type: "STRING" }, description: "تحديث قائمة المهام." }
           };
+          let requiredKeys = ["reply", "tasks"];
           
           criteria.forEach(c => { 
              if (c.subCriteria && c.subCriteria.length > 0) {
@@ -388,39 +444,36 @@ ${recentContext}\n\n${criteriaPrompt}`;
           });
           
           const entryContext = `اللقب الحالي: ${currentEntry.title}\nالمهام الحالية: ${(currentEntry.tasks || []).join('، ')}\nالتقييمات الحالية: ${scoresContext}`;
+          const systemPrompt = `أنت مساعد ليومياتي. رد على المستخدم وعدّل التقييمات أو اللقب أو أضف مهام جديدة إذا استدعى الأمر.\n\n${entryContext}`;
 
-          const payload = {
-            contents: [{ role: "user", parts: [{ text: `سجل المحادثة:\n${historyContext}\n\nرسالة المستخدم: ${userMessage}` }] }],
-            systemInstruction: { parts: [{ text: `أنت مساعد ليومياتي. رد على المستخدم وعدّل التقييمات أو اللقب أو أضف مهام جديدة إذا استدعى الأمر.\n\n${entryContext}` }] },
-            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: dynamicProperties, required: ["reply", "tasks"] } }
-          };
+          const payload = buildSafePayload(modelName, systemPrompt, [{ text: `سجل المحادثة:\n${historyContext}\n\nرسالة المستخدم: ${userMessage}` }], dynamicProperties, requiredKeys);
           return await fetchWithRetry(url, payload);
         };
 
         const generateDashboardInsightsAI = async (entries, criteria, apiKey) => {
           if (!apiKey) throw new Error("مفتاح الذكاء الاصطناعي مفقود.");
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+          const modelName = await getValidGeminiModel(apiKey);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
           const entriesSummary = entries.map(e => `[${e.date}]: اللقب(${e.title}), المهام(${e.tasks?.join('، ') || 'لا يوجد'})`).join('\n').substring(0, 15000);
 
           let dynamicProperties = { overallTitle: { type: "STRING" } };
           let requiredKeys = ["overallTitle"];
           criteria.forEach(c => { dynamicProperties[`advice_${c.id}`] = { type: "STRING", description: `توصية شاملة لجانب ${c.label}` }; requiredKeys.push(`advice_${c.id}`); });
 
-          const payload = {
-            contents: [{ role: "user", parts: [{ text: `ملخص أيامي:\n${entriesSummary}\nاستخرج لقباً دقيقاً يصفني ونصيحة لكل معيار رئيسي.` }] }],
-            systemInstruction: { parts: [{ text: "أرجع JSON بلقب شامل يعكس حقيقة الأفعال (أقصى 4 كلمات) وتوصيات قصيرة." }] },
-            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: dynamicProperties, required: requiredKeys } }
-          };
+          const systemPrompt = "أرجع JSON بلقب شامل يعكس حقيقة الأفعال (أقصى 4 كلمات) وتوصيات قصيرة.";
+          const payload = buildSafePayload(modelName, systemPrompt, [{ text: `ملخص أيامي:\n${entriesSummary}\nاستخرج لقباً دقيقاً يصفني ونصيحة لكل معيار رئيسي.` }], dynamicProperties, requiredKeys);
+          
           return await fetchWithRetry(url, payload);
         };
 
         const generateMonthlyTitleAI = async (entriesText, apiKey) => {
           if (!apiKey) throw new Error("مفتاح الذكاء الاصطناعي مفقود.");
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-          const payload = {
-            contents: [{ role: "user", parts: [{ text: `استخرج لقباً يصف هذا الشهر (4 كلمات كحد أقصى):\n${entriesText}` }] }],
-            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { monthlyTitle: { type: "STRING" } }, required: ["monthlyTitle"] } }
-          };
+          const modelName = await getValidGeminiModel(apiKey);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+          
+          const systemPrompt = "أنت محلل. يجب أن ترجع اللقب الشهري بحيث يكون قصيراً جداً (من كلمتين إلى 4 كلمات كحد أقصى).";
+          const payload = buildSafePayload(modelName, systemPrompt, [{ text: `استخرج لقباً يصف هذا الشهر (4 كلمات كحد أقصى):\n${entriesText}` }], { monthlyTitle: { type: "STRING" } }, ["monthlyTitle"]);
+
           const res = await fetchWithRetry(url, payload);
           return res ? res.monthlyTitle : "شهر جديد";
         };
@@ -875,7 +928,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                         {globalApiKey && !insights && (
                             <button onClick={handleGenerateInsights} disabled={isGeneratingInsights} className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 flex gap-2">
                                 {isGeneratingInsights ? <Loader className="animate-spin text-sm"/> : <Sparkles className="text-sm"/>}
-                                {isGeneratingInsights ? "يتم التوليد..." : "توليد النصائح"}
+                                <span>{isGeneratingInsights ? "يتم التوليد..." : "توليد النصائح"}</span>
                             </button>
                         )}
                     </div>
@@ -1771,7 +1824,17 @@ ${recentContext}\n\n${criteriaPrompt}`;
             const unsubSettings = db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).onSnapshot((docSnap) => {
               if (docSnap.exists) {
                 const data = docSnap.data();
-                if (data.criteria && Array.isArray(data.criteria) && data.criteria.length > 0 && isMounted) setCriteria(data.criteria);
+                if (data.criteria && Array.isArray(data.criteria) && data.criteria.length > 0 && isMounted) {
+                   // دمج المعايير المحفوظة مع الافتراضية لضمان وجود الجوانب الفرعية للإعدادات القديمة
+                   let mergedCriteria = data.criteria.map(savedCat => {
+                       const defaultCat = defaultCriteria.find(dc => dc.id === savedCat.id);
+                       if (defaultCat && (!savedCat.subCriteria || savedCat.subCriteria.length === 0)) {
+                           return { ...savedCat, subCriteria: defaultCat.subCriteria };
+                       }
+                       return savedCat;
+                   });
+                   setCriteria(mergedCriteria);
+                }
                 if (data.monthlyTitles && isMounted) setMonthlyTitles(data.monthlyTitles);
               }
             });
