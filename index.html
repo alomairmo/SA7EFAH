@@ -77,72 +77,39 @@
         // ==========================================
         const createIcon = (iconClass) => ({className}) => <i className={`${iconClass} ${className||''}`}></i>;
         
-        const Brain = createIcon('fas fa-brain fa-fw');
-        const Star = createIcon('fas fa-star fa-fw');
-        const Heart = createIcon('fas fa-heart fa-fw');
-        const Users = createIcon('fas fa-users fa-fw');
-        const Briefcase = createIcon('fas fa-briefcase fa-fw');
-        const Activity = createIcon('fas fa-chart-line fa-fw');
-        const CalendarIcon = createIcon('fas fa-calendar-alt fa-fw');
-        const CalendarDays = CalendarIcon; const Calendar = CalendarIcon;
-        const Plus = createIcon('fas fa-plus fa-fw');
-        const ChevronRight = createIcon('fas fa-chevron-right fa-fw');
-        const ChevronLeft = createIcon('fas fa-chevron-left fa-fw');
-        const ArrowRight = createIcon('fas fa-arrow-right fa-fw');
-        const Loader = createIcon('fas fa-spinner fa-spin fa-fw');
-        const Loader2 = Loader; const RefreshCw = createIcon('fas fa-sync-alt fa-fw');
-        const Edit = createIcon('fas fa-edit fa-fw');
-        const Edit3 = Edit;
-        const Lock = createIcon('fas fa-lock fa-fw');
-        const AlertCircle = createIcon('fas fa-exclamation-circle fa-fw');
-        const AlignLeft = createIcon('fas fa-align-left fa-fw');
-        const Grid = createIcon('fas fa-th fa-fw');
-        const Check = createIcon('fas fa-check fa-fw');
-        const CheckCircle = createIcon('fas fa-check-circle fa-fw');
-        const CheckCircle2 = CheckCircle;
-        const Home = createIcon('fas fa-home fa-fw');
-        const List = createIcon('fas fa-list fa-fw');
-        const ListTodo = createIcon('fas fa-tasks fa-fw');
-        const MessageSquare = createIcon('fas fa-comment-alt fa-fw');
-        const Send = createIcon('fas fa-paper-plane fa-fw');
-        const Settings = createIcon('fas fa-cog fa-fw');
-        const Trash = createIcon('fas fa-trash fa-fw');
-        const Trash2 = Trash;
-        const X = createIcon('fas fa-times fa-fw');
-        const LogOut = createIcon('fas fa-sign-out-alt fa-fw');
-        const Mail = createIcon('fas fa-envelope fa-fw');
-        const Key = createIcon('fas fa-key fa-fw');
-        const UserPlus = createIcon('fas fa-user-plus fa-fw');
-        const LogIn = createIcon('fas fa-sign-in-alt fa-fw');
-        const User = createIcon('fas fa-user fa-fw');
-        const Phone = createIcon('fas fa-phone fa-fw');
-        const TrendingUp = createIcon('fas fa-arrow-trend-up fa-fw');
-        const Lightbulb = createIcon('fas fa-lightbulb fa-fw');
-        const Sparkles = Lightbulb;
-        const PlayCircle = createIcon('fas fa-play-circle fa-fw');
-        const BarChart = createIcon('fas fa-chart-bar fa-fw');
-        const BarChart3 = BarChart;
-        const LineChart = createIcon('fas fa-chart-line fa-fw');
-        const LayoutDashboard = createIcon('fas fa-tachometer-alt fa-fw');
-        const Mic = createIcon('fas fa-microphone fa-fw');
-        const MicOff = createIcon('fas fa-microphone-slash fa-fw');
-        const LinkIcon = createIcon('fas fa-link fa-fw');
-        const Book = createIcon('fas fa-book fa-fw');
-        const Coffee = createIcon('fas fa-coffee fa-fw');
-        const Music = createIcon('fas fa-music fa-fw');
-        const Sun = createIcon('fas fa-sun fa-fw');
-        const Moon = createIcon('fas fa-moon fa-fw');
-        const Zap = createIcon('fas fa-bolt fa-fw');
-        const Shield = createIcon('fas fa-shield-alt fa-fw');
-        const Target = createIcon('fas fa-bullseye fa-fw');
-        const Smile = createIcon('fas fa-smile fa-fw');
-        const Compass = createIcon('fas fa-compass fa-fw');
-        const Feather = createIcon('fas fa-feather fa-fw');
-        const Flame = createIcon('fas fa-fire fa-fw');
-        const Maximize = createIcon('fas fa-expand fa-fw');
-        const Minimize = createIcon('fas fa-compress fa-fw');
-        const PlusIcon = createIcon('fas fa-plus fa-fw');
-        const MinusIcon = createIcon('fas fa-minus fa-fw');
+        const Brain = createIcon('fas fa-brain fa-fw'); const Star = createIcon('fas fa-star fa-fw');
+        const Heart = createIcon('fas fa-heart fa-fw'); const Users = createIcon('fas fa-users fa-fw');
+        const Briefcase = createIcon('fas fa-briefcase fa-fw'); const Activity = createIcon('fas fa-chart-line fa-fw');
+        const CalendarIcon = createIcon('fas fa-calendar-alt fa-fw'); const CalendarDays = CalendarIcon; const Calendar = CalendarIcon;
+        const Plus = createIcon('fas fa-plus fa-fw'); const ChevronRight = createIcon('fas fa-chevron-right fa-fw');
+        const ChevronLeft = createIcon('fas fa-chevron-left fa-fw'); const ArrowRight = createIcon('fas fa-arrow-right fa-fw');
+        const Loader = createIcon('fas fa-spinner fa-spin fa-fw'); const Loader2 = Loader; const RefreshCw = createIcon('fas fa-sync-alt fa-fw');
+        const Edit = createIcon('fas fa-edit fa-fw'); const Edit3 = Edit;
+        const Lock = createIcon('fas fa-lock fa-fw'); const AlertCircle = createIcon('fas fa-exclamation-circle fa-fw');
+        const AlignLeft = createIcon('fas fa-align-left fa-fw'); const Grid = createIcon('fas fa-th fa-fw');
+        const Check = createIcon('fas fa-check fa-fw'); const CheckCircle = createIcon('fas fa-check-circle fa-fw'); const CheckCircle2 = CheckCircle;
+        const Home = createIcon('fas fa-home fa-fw'); const List = createIcon('fas fa-list fa-fw');
+        const ListTodo = createIcon('fas fa-tasks fa-fw'); const MessageSquare = createIcon('fas fa-comment-alt fa-fw');
+        const Send = createIcon('fas fa-paper-plane fa-fw'); const Settings = createIcon('fas fa-cog fa-fw');
+        const Trash = createIcon('fas fa-trash fa-fw'); const Trash2 = Trash; const X = createIcon('fas fa-times fa-fw');
+        const LogOut = createIcon('fas fa-sign-out-alt fa-fw'); const Mail = createIcon('fas fa-envelope fa-fw');
+        const Key = createIcon('fas fa-key fa-fw'); const UserPlus = createIcon('fas fa-user-plus fa-fw');
+        const LogIn = createIcon('fas fa-sign-in-alt fa-fw'); const User = createIcon('fas fa-user fa-fw');
+        const Phone = createIcon('fas fa-phone fa-fw'); const TrendingUp = createIcon('fas fa-arrow-trend-up fa-fw');
+        const Lightbulb = createIcon('fas fa-lightbulb fa-fw'); const Sparkles = Lightbulb;
+        const PlayCircle = createIcon('fas fa-play-circle fa-fw'); const BarChart = createIcon('fas fa-chart-bar fa-fw'); const BarChart3 = BarChart;
+        const LineChart = createIcon('fas fa-chart-line fa-fw'); const LayoutDashboard = createIcon('fas fa-tachometer-alt fa-fw');
+        const Mic = createIcon('fas fa-microphone fa-fw'); const MicOff = createIcon('fas fa-microphone-slash fa-fw');
+        const LinkIcon = createIcon('fas fa-link fa-fw'); const Book = createIcon('fas fa-book fa-fw');
+        const Coffee = createIcon('fas fa-coffee fa-fw'); const Music = createIcon('fas fa-music fa-fw');
+        const Sun = createIcon('fas fa-sun fa-fw'); const Moon = createIcon('fas fa-moon fa-fw');
+        const Zap = createIcon('fas fa-bolt fa-fw'); const Shield = createIcon('fas fa-shield-alt fa-fw');
+        const Target = createIcon('fas fa-bullseye fa-fw'); const Smile = createIcon('fas fa-smile fa-fw');
+        const Compass = createIcon('fas fa-compass fa-fw'); const Feather = createIcon('fas fa-feather fa-fw');
+        const Flame = createIcon('fas fa-fire fa-fw'); const Maximize = createIcon('fas fa-expand fa-fw');
+        const Minimize = createIcon('fas fa-compress fa-fw'); const PlusIcon = createIcon('fas fa-plus fa-fw');
+        const MinusIcon = createIcon('fas fa-minus fa-fw'); const Info = createIcon('fas fa-info-circle fa-fw');
+        const TrendingDown = createIcon('fas fa-arrow-trend-down fa-fw');
 
         // ==========================================
         // 2. إعدادات قواعد البيانات فقط 
@@ -196,20 +163,11 @@
         }
 
         // ==========================================
-        // 4. استكشاف الذكاء الاصطناعي التلقائي (محمي بالـ Cache)
+        // 4. استكشاف الذكاء الاصطناعي التلقائي
         // ==========================================
         const getValidGeminiModel = async (apiKey) => {
           if (!apiKey) throw new Error("API_KEY_MISSING");
-          
-          // استخدام الكاش لتجنب استهلاك الطلبات وحل مشكلة Quota
-          const cacheKey = 'gemini_model_cache_' + apiKey.substring(0, 10);
           if (window.discoveredModelCache) return window.discoveredModelCache;
-          
-          const localCache = localStorage.getItem(cacheKey);
-          if (localCache) {
-             window.discoveredModelCache = localCache;
-             return localCache;
-          }
 
           try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
@@ -220,22 +178,19 @@
             if (data.models && data.models.length > 0) {
               const validModels = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
               let selected = validModels.find(m => m.name === 'models/gemini-1.5-flash') ||
-                             validModels.find(m => m.name.includes("1.5-flash")) ||
                              validModels.find(m => m.name.includes("flash")) ||
                              validModels.find(m => m.name.includes("pro")) ||
                              validModels[0];
               
               if (selected) {
-                const modelName = selected.name.replace('models/', '');
-                window.discoveredModelCache = modelName;
-                localStorage.setItem(cacheKey, modelName); // حفظ المحرك المتاح
-                return modelName;
+                window.discoveredModelCache = selected.name.replace('models/', '');
+                return window.discoveredModelCache;
               }
             }
             throw new Error("المفتاح لا يدعم توليد النصوص.");
           } catch(e) { 
             if (e.message === "API_KEY_MISSING") throw e;
-            return "gemini-pro"; // احتياطي
+            return "gemini-1.5-flash"; 
           }
         };
 
@@ -279,7 +234,6 @@
           },
         ];
 
-        // --- توافق رجعي للأيام القديمة التي لا تحتوي على فروع ---
         const getCategoryScore = (entryScores, category) => {
             if (!entryScores) return 0;
             if (category.subCriteria && category.subCriteria.length > 0) {
@@ -322,14 +276,12 @@
             try {
               const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
               const data = await response.json();
-              
               if (!response.ok) {
                   if(data.error?.message?.includes("Quota") || response.status === 429) {
                       throw new Error("تجاوزت حد الطلبات المجانية. يرجى الانتظار لمدة دقيقة والمحاولة مجدداً.");
                   }
                   throw new Error(data.error?.message || `خطأ اتصال مع الخادم`);
               }
-
               const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
               if (!resultText) throw new Error("استجابة فارغة من الذكاء الاصطناعي");
               return JSON.parse(cleanJSONString(resultText));
@@ -343,7 +295,6 @@
           throw lastError;
         };
 
-        // --- مولد الـ Payload المتوافق مع جميع المحركات القديمة والحديثة ---
         const buildSafePayload = (modelName, systemPrompt, userParts, schemaProperties, requiredKeys) => {
             const isAdvanced = modelName.includes("1.5") || modelName.includes("2.0") || modelName.includes("flash");
             let payload = { contents: [{ role: "user", parts: userParts }] };
@@ -404,7 +355,7 @@
           const systemPrompt = `أنت محلل حياة. حلل يوميات المستخدم بدقة. 
 اللقب: 4 كلمات كحد أقصى.
 المهام: استخرجها جميعاً كمصفوفة نصوص قصيرة.
-التقييم: 0-10 لكل معيار مبين أدناه مع تبرير بسطر واحد.
+التقييم: 0-10 لكل معيار أو معيار فرعي مبين أدناه مع تبرير بسطر واحد.
 ${recentContext}\n\n${criteriaPrompt}`;
 
           const parts = [];
@@ -425,15 +376,22 @@ ${recentContext}\n\n${criteriaPrompt}`;
           const historyContext = chatHistory.map(msg => `${msg.sender === 'user' ? 'المستخدم' : 'الذكاء الاصطناعي'}: ${msg.text}`).join('\n');
           
           let scoresContext = "";
+          let idMapText = "معرفات الجوانب (IDs) المتاحة للتقييم:\n";
           let dynamicProperties = { 
             reply: { type: "STRING" }, title: { type: "STRING", description: "تحديث اللقب إن لزم الأمر (أقصى 4 كلمات)" },
-            tasks: { type: "ARRAY", items: { type: "STRING" }, description: "تحديث قائمة المهام." }
+            tasks: { type: "ARRAY", items: { type: "STRING" }, description: "تحديث قائمة المهام." },
+            learned_rule: {
+              type: "OBJECT",
+              description: "إذا قام المستخدم بتوجيهك لإضافة قاعدة تقييم جديدة، ضعها هنا.",
+              properties: { target_id: { type: "STRING" }, rule_text: { type: "STRING" } }
+            }
           };
-          let requiredKeys = ["reply", "tasks"];
           
           criteria.forEach(c => { 
+             idMapText += `- رئيسي: "${c.label}" (ID: ${c.id})\n`;
              if (c.subCriteria && c.subCriteria.length > 0) {
                  c.subCriteria.forEach(sub => {
+                     idMapText += `  - فرعي: "${sub.label}" (ID: ${sub.id})\n`;
                      scoresContext += `${sub.label}(${currentEntry.scores?.[sub.id] || 0}), `;
                      dynamicProperties[`score_${sub.id}`] = { type: "INTEGER" };
                  });
@@ -444,9 +402,12 @@ ${recentContext}\n\n${criteriaPrompt}`;
           });
           
           const entryContext = `اللقب الحالي: ${currentEntry.title}\nالمهام الحالية: ${(currentEntry.tasks || []).join('، ')}\nالتقييمات الحالية: ${scoresContext}`;
-          const systemPrompt = `أنت مساعد ليومياتي. رد على المستخدم وعدّل التقييمات أو اللقب أو أضف مهام جديدة إذا استدعى الأمر.\n\n${entryContext}`;
+          const systemPrompt = `أنت مساعد ليومياتي. رد على المستخدم وعدّل التقييمات أو اللقب أو أضف مهام جديدة إذا استدعى الأمر.
+إذا قام المستخدم بتوجيهك وتصحيح طريقتك في التقييم (مثلاً: "لماذا أعطيتني درجة كاملة وأنا لم أفعل كذا؟ يجب أن تنقص الدرجة")، يجب أن تستخرج هذه كقاعدة لتلتزم بها مستقبلاً.
+أرجع هذه القاعدة في حقل "learned_rule" وضع فيها "target_id" (من القائمة أدناه) و "rule_text" (نص القاعدة المستخلصة). وتأكد أن تكتب في ردك (reply) للمستخدم أنك استوعبت الملاحظة وأضفتها للشرح لمراعاتها لاحقاً.
+\n${idMapText}\n\n${entryContext}`;
 
-          const payload = buildSafePayload(modelName, systemPrompt, [{ text: `سجل المحادثة:\n${historyContext}\n\nرسالة المستخدم: ${userMessage}` }], dynamicProperties, requiredKeys);
+          const payload = buildSafePayload(modelName, systemPrompt, [{ text: `سجل المحادثة:\n${historyContext}\n\nرسالة المستخدم: ${userMessage}` }], dynamicProperties, ["reply"]);
           return await fetchWithRetry(url, payload);
         };
 
@@ -456,12 +417,19 @@ ${recentContext}\n\n${criteriaPrompt}`;
           const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
           const entriesSummary = entries.map(e => `[${e.date}]: اللقب(${e.title}), المهام(${e.tasks?.join('، ') || 'لا يوجد'})`).join('\n').substring(0, 15000);
 
-          let dynamicProperties = { overallTitle: { type: "STRING" } };
-          let requiredKeys = ["overallTitle"];
-          criteria.forEach(c => { dynamicProperties[`advice_${c.id}`] = { type: "STRING", description: `توصية شاملة لجانب ${c.label}` }; requiredKeys.push(`advice_${c.id}`); });
+          let dynamicProperties = { 
+            overallTitle: { type: "STRING", description: "لقب عام لملخص هذه الفترة" },
+            general_positives: { type: "ARRAY", items: { type: "STRING" }, description: "أهم 3 إيجابيات في مسيرته" },
+            general_negatives: { type: "ARRAY", items: { type: "STRING" }, description: "أبرز السلبيات أو القصور" },
+            general_trends: { type: "STRING", description: "كيف يتطور أو يتراجع المستخدم خلال هذه الفترة؟" },
+            general_suggestions: { type: "STRING", description: "خطة عمل سريعة أو مقترحات شاملة" }
+          };
+          let requiredKeys = ["overallTitle", "general_positives", "general_negatives", "general_trends", "general_suggestions"];
+          
+          criteria.forEach(c => { dynamicProperties[`advice_${c.id}`] = { type: "STRING", description: `توصية لجانب ${c.label}` }; requiredKeys.push(`advice_${c.id}`); });
 
-          const systemPrompt = "أرجع JSON بلقب شامل يعكس حقيقة الأفعال (أقصى 4 كلمات) وتوصيات قصيرة.";
-          const payload = buildSafePayload(modelName, systemPrompt, [{ text: `ملخص أيامي:\n${entriesSummary}\nاستخرج لقباً دقيقاً يصفني ونصيحة لكل معيار رئيسي.` }], dynamicProperties, requiredKeys);
+          const systemPrompt = "أنت خبير نفسي ومحلل بيانات محترف. ادرس ملخص يوميات المستخدم خلال هذه الفترة بدقة، ثم استخرج تحليلاً شاملاً لشخصيته وتطوره وضع له خطة عمل ونقاط قوة وضعف بناءً على البيانات المتوفرة فقط.";
+          const payload = buildSafePayload(modelName, systemPrompt, [{ text: `ملخص أيامي:\n${entriesSummary}` }], dynamicProperties, requiredKeys);
           
           return await fetchWithRetry(url, payload);
         };
@@ -529,11 +497,12 @@ ${recentContext}\n\n${criteriaPrompt}`;
         const BarChartComponent = ({ data, onBarClick, zoomLevel, isFullscreen, chartMetric }) => {
           const isTasks = chartMetric === 'tasksCount';
           const maxVal = isTasks ? Math.max(10, ...data.map(d => d.entry?.tasks?.length || d.entriesCount || 0)) : 10;
-          const containerWidth = Math.max(100, zoomLevel * 100);
+          // تعديل العرض ليتمدد مع التكبير بدون اختفاء الأعمدة
+          const containerWidth = Math.max(100, zoomLevel * 100); 
           
           return (
             <div className={`w-full overflow-x-auto scrollbar-hide ${isFullscreen ? 'flex-1 pt-6' : 'h-[300px] pt-12'}`}>
-              <div className={`flex items-end justify-between min-w-full px-2 gap-[2px] ${isFullscreen ? 'h-[90%]' : 'h-full'}`} style={{ width: `${containerWidth}%` }}>
+              <div className={`flex items-end justify-between px-2 gap-1 ${isFullscreen ? 'h-[90%]' : 'h-full'}`} style={{ minWidth: `${containerWidth}%` }}>
                  {data.map((d, i) => {
                     const score = isTasks ? (d.entry?.tasks?.length || (d.entriesCount > 0 ? d.avgTasks : 0)) : parseFloat(d.displayScore || 0);
                     const hasData = d.entry || d.entriesCount > 0;
@@ -700,8 +669,40 @@ ${recentContext}\n\n${criteriaPrompt}`;
         };
 
         const SettingsView = ({ criteria, saveCriteria, goToDashboard }) => {
+          const [editingId, setEditingId] = useState(null);
+          const [formData, setFormData] = useState({ label: '', desc: '', icon: 'Star' });
+
+          const handleEditMain = (c) => { 
+             setEditingId(c.id); 
+             setFormData({ label: c.label, desc: c.desc || '', icon: c.icon }); 
+             window.scrollTo({top: 0, behavior: 'smooth'});
+          };
+
+          const handleDeleteMain = (id) => {
+            if (criteria.length <= 1) return alert("يجب أن يكون هناك جانب رئيسي واحد على الأقل.");
+            if (window.confirm("تحذير: سيتم حذف هذا الجانب الرئيسي وجميع فروعه بالكامل. هل أنت متأكد؟")) {
+              saveCriteria(criteria.filter(c => c.id !== id));
+            }
+          };
+
+          const handleSaveMain = () => {
+            if (!formData.label.trim()) return alert("اسم الجانب الرئيسي مطلوب");
+            if (editingId) {
+              saveCriteria(criteria.map(c => c.id === editingId ? { ...c, label: formData.label, desc: formData.desc, icon: formData.icon } : c));
+            } else {
+              const newId = `crit_${Date.now()}`;
+              const randomColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+              saveCriteria([...criteria, { id: newId, ...formData, colorObj: randomColor, subCriteria: [] }]);
+            }
+            setEditingId(null); setFormData({ label: '', desc: '', icon: 'Star' });
+          };
+
+          const cancelEditMain = () => {
+            setEditingId(null); setFormData({ label: '', desc: '', icon: 'Star' });
+          };
+
           const handleAddSub = (parentId) => {
-             const newSub = { id: `sub_${Date.now()}`, label: 'جانب جديد', desc: '' };
+             const newSub = { id: `sub_${Date.now()}`, label: 'جانب فرعي جديد', desc: '' };
              const updated = criteria.map(c => {
                 if(c.id === parentId) return {...c, subCriteria: [...(c.subCriteria||[]), newSub]};
                 return c;
@@ -744,33 +745,76 @@ ${recentContext}\n\n${criteriaPrompt}`;
 
               <div className="p-5">
                 <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl mb-6 text-sm text-blue-800 font-medium">
-                  يمكنك هنا إضافة "جوانب فرعية" تحت الجوانب الرئيسية ليقوم الذكاء الاصطناعي بتقييمها بدقة أكبر.
+                  هنا يمكنك إدارة "الجوانب الرئيسية" للتقييم، وإضافة "جوانب فرعية" تندرج تحتها ليقوم الذكاء الاصطناعي بتقييمها بدقة مفصلة.
                 </div>
 
+                <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-200 mb-6 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                  <h2 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
+                    {editingId ? <><Edit3 className="text-blue-500 text-lg"/> <span>تعديل الجانب الرئيسي</span></> : <><Plus className="text-blue-500 text-lg"/> <span>إضافة جانب رئيسي جديد</span></>}
+                  </h2>
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 mb-1 block">الأيقونة</label>
+                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                        {Object.keys(IconMap).map(iconName => {
+                          const IconComp = IconMap[iconName];
+                          return (
+                            <button key={iconName} onClick={() => setFormData({...formData, icon: iconName})} className={`p-3 rounded-xl border shrink-0 transition-all ${formData.icon === iconName ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-gray-50 border-transparent text-gray-400 hover:bg-gray-100'}`}>
+                              <IconComp className="text-xl" />
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 mb-1 block">اسم الجانب الرئيسي</label>
+                      <input type="text" value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="مثال: الصحة النفسية..." />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-500 mb-1 block">شرح الجانب للذكاء الاصطناعي (اختياري)</label>
+                      <textarea value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} rows="2" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="اكتب تعليمات مخصصة ليراعيها الذكاء الاصطناعي..."></textarea>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={handleSaveMain} className="flex-1 bg-blue-600 text-white font-bold rounded-xl py-3 shadow-md hover:bg-blue-700 transition">حفظ الجانب الرئيسي</button>
+                      {editingId && <button onClick={cancelEditMain} className="px-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">إلغاء</button>}
+                    </div>
+                  </div>
+                </div>
+
+                <h3 className="text-gray-500 font-bold text-sm mb-3 px-1">الجوانب الحالية ({criteria.length})</h3>
                 <div className="flex flex-col gap-5">
                   {criteria.map(c => {
                     const IconComp = IconMap[c.icon] || Star;
                     return (
                       <div key={c.id} className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div className={`w-10 h-10 flex items-center justify-center rounded-xl ${c.colorObj.main}`}><IconComp className="text-white" /></div>
-                          <div>
-                            <h4 className="font-black text-gray-800 text-base">{c.label}</h4>
-                            {c.desc && <p className="text-xs text-gray-500 mt-0.5">{c.desc}</p>}
+                        
+                        <div className="flex items-start justify-between mb-4 pb-4 border-b border-gray-100">
+                          <div className="flex items-start gap-3">
+                            <div className={`w-10 h-10 flex items-center justify-center rounded-xl ${c.colorObj.main}`}><IconComp className="text-white" /></div>
+                            <div>
+                              <h4 className="font-black text-gray-800 text-base">{c.label}</h4>
+                              {c.desc && <p className="text-xs text-gray-500 mt-1 max-w-[200px] leading-relaxed break-words whitespace-pre-wrap">{c.desc}</p>}
+                            </div>
+                          </div>
+                          <div className="flex gap-1">
+                            <button onClick={() => handleEditMain(c)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition" title="تعديل الرئيسي"><Edit className="text-sm" /></button>
+                            <button onClick={() => handleDeleteMain(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition" title="حذف الرئيسي"><Trash className="text-sm" /></button>
                           </div>
                         </div>
                         
                         <div className="flex flex-col gap-3 pr-6 border-r-2 border-gray-100 mr-2">
+                           <div className="text-xs font-bold text-gray-400 mb-1">الفروع التابعة:</div>
                            {(c.subCriteria || []).map(sub => (
-                             <div key={sub.id} className="bg-gray-50 p-3 rounded-xl border border-gray-200 flex flex-col gap-2">
+                             <div key={sub.id} className="bg-gray-50 p-3 rounded-xl border border-gray-200 flex flex-col gap-2 relative group">
                                 <div className="flex justify-between items-center">
-                                   <input type="text" value={sub.label} onChange={(e) => handleUpdateSub(c.id, sub.id, 'label', e.target.value)} className="bg-transparent font-bold text-sm text-gray-800 focus:outline-none focus:border-b border-blue-500 w-1/2" placeholder="اسم الجانب..." />
-                                   <button onClick={() => handleDeleteSub(c.id, sub.id)} className="text-red-400 hover:text-red-600 p-1"><Trash className="text-xs" /></button>
+                                   <input type="text" value={sub.label} onChange={(e) => handleUpdateSub(c.id, sub.id, 'label', e.target.value)} className="bg-transparent font-bold text-sm text-gray-800 focus:outline-none focus:border-b border-blue-500 w-1/2" placeholder="اسم الفرع..." />
+                                   <button onClick={() => handleDeleteSub(c.id, sub.id)} className="text-red-400 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition"><Trash className="text-xs" /></button>
                                 </div>
-                                <input type="text" value={sub.desc} onChange={(e) => handleUpdateSub(c.id, sub.id, 'desc', e.target.value)} className="bg-transparent text-xs text-gray-500 focus:outline-none w-full" placeholder="شرح للذكاء الاصطناعي (اختياري)..." />
+                                <textarea value={sub.desc} onChange={(e) => handleUpdateSub(c.id, sub.id, 'desc', e.target.value)} className="bg-transparent text-xs text-gray-500 focus:outline-none w-full resize-none h-14 whitespace-pre-wrap" placeholder="قواعد وشرح الذكاء الاصطناعي..."></textarea>
                              </div>
                            ))}
-                           <button onClick={() => handleAddSub(c.id)} className="flex items-center gap-2 text-blue-600 font-bold text-xs p-2 hover:bg-blue-50 rounded-lg w-fit transition">
+                           <button onClick={() => handleAddSub(c.id)} className="flex items-center gap-2 text-blue-600 font-bold text-xs p-2 hover:bg-blue-50 rounded-lg w-fit transition mt-1">
                              <Plus className="text-xs" /> <span>إضافة جانب فرعي جديد</span>
                            </button>
                         </div>
@@ -950,15 +994,23 @@ ${recentContext}\n\n${criteriaPrompt}`;
                               <div className={`h-full ${cat.colorObj.main} rounded-full transition-all duration-1000`} style={{ width: `${(parseFloat(score) / 10) * 100}%` }}></div>
                             </div>
 
-                            {/* الفروع في الشاشة الرئيسية إن وجدت وتقييمها لا يساوي صفر */}
+                            {/* الفروع مع أشرطة الصحة */}
                             {cat.subCriteria && cat.subCriteria.length > 0 && (
-                                <div className="flex flex-col gap-2 pr-4 border-r-2 border-gray-200 mt-3 mb-4">
+                                <div className="flex flex-col gap-4 pr-4 border-r-2 border-gray-200 mt-4 mb-4">
                                     {cat.subCriteria.map(sub => {
                                         const subScore = stats.criteriaScores[sub.id] || "0.0";
                                         return (
-                                            <div key={sub.id} className="flex justify-between items-center text-sm">
-                                                <span className="text-gray-600 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>{sub.label}</span>
-                                                <span className="font-bold text-gray-800">{subScore}/10</span>
+                                            <div key={sub.id} className="flex flex-col gap-1.5">
+                                                <div className="flex justify-between items-center text-sm">
+                                                    <span className="font-bold text-gray-700 flex items-center gap-2">
+                                                      <span className="w-2 h-2 rounded-full bg-gray-400"></span>{sub.label}
+                                                    </span>
+                                                    <span className="font-black text-gray-500">{subScore}/10</span>
+                                                </div>
+                                                {/* شريط التقدم للجانب الفرعي */}
+                                                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                  <div className={`h-full ${cat.colorObj.main} opacity-70 rounded-full transition-all`} style={{ width: `${(parseFloat(subScore) / 10) * 100}%` }}></div>
+                                                </div>
                                             </div>
                                         )
                                     })}
@@ -974,6 +1026,51 @@ ${recentContext}\n\n${criteriaPrompt}`;
                         )
                       })}
                     </div>
+                    
+                    {/* التحليل الشامل الجديد للذكاء الاصطناعي */}
+                    {insights && (
+                      <div className="bg-slate-900 p-6 rounded-3xl shadow-xl mt-10 text-white relative overflow-hidden">
+                         <div className="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
+                         <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+                           <Brain className="text-blue-400 text-2xl"/> <span>التحليل الشامل لشخصيتك</span>
+                         </h3>
+                         
+                         <div className="flex flex-col gap-6">
+                             {insights.general_positives && insights.general_positives.length > 0 && (
+                               <div>
+                                   <h4 className="text-green-400 font-bold mb-2 flex items-center gap-2 text-sm"><CheckCircle className="text-sm"/> نقاط القوة والإيجابيات</h4>
+                                   <ul className="list-disc list-inside pr-2 space-y-2 text-sm text-gray-300 font-medium leading-relaxed">
+                                      {insights.general_positives.map((p, i) => <li key={i}>{p}</li>)}
+                                   </ul>
+                               </div>
+                             )}
+                             
+                             {insights.general_negatives && insights.general_negatives.length > 0 && (
+                               <div>
+                                   <h4 className="text-rose-400 font-bold mb-2 flex items-center gap-2 text-sm"><AlertCircle className="text-sm"/> السلبيات ومجالات القصور</h4>
+                                   <ul className="list-disc list-inside pr-2 space-y-2 text-sm text-gray-300 font-medium leading-relaxed">
+                                      {insights.general_negatives.map((p, i) => <li key={i}>{p}</li>)}
+                                   </ul>
+                               </div>
+                             )}
+
+                             {insights.general_trends && (
+                               <div>
+                                   <h4 className="text-sky-400 font-bold mb-2 flex items-center gap-2 text-sm"><TrendingUp className="text-sm"/> التطور والتراجع</h4>
+                                   <p className="text-sm text-gray-300 font-medium leading-relaxed pr-2 border-r-2 border-sky-500/30">{insights.general_trends}</p>
+                               </div>
+                             )}
+
+                             {insights.general_suggestions && (
+                               <div>
+                                   <h4 className="text-amber-400 font-bold mb-2 flex items-center gap-2 text-sm"><Lightbulb className="text-sm"/> خطة العمل والتحسين</h4>
+                                   <p className="text-sm text-gray-300 font-medium leading-relaxed pr-2 border-r-2 border-amber-500/30">{insights.general_suggestions}</p>
+                               </div>
+                             )}
+                         </div>
+                      </div>
+                    )}
+
                   </div>
                 )}
               </div>
@@ -1410,7 +1507,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                 title: aiResult?.title || "يومياتي", comparison: aiResult?.comparison || "لا تتوفر مقارنة حالياً.", tips: aiResult?.tips || "استمر في تدوين يومياتك بانتظام.",
                 averageScore: calculateOverallAverage(scoresObj, criteria), chatHistory: entries[selectedDate]?.chatHistory || [] 
               });
-            } catch (err) { setError(err.message || "حدث خطأ غير متوقع."); } finally { setIsAnalyzing(false); }
+            } catch (err) { setError(`خطأ: ${err.message}`); } finally { setIsAnalyzing(false); }
           };
 
           const isExpired = entries?.[selectedDate] && (Date.now() - (entries[selectedDate].timestamp || Date.now())) > (24 * 60 * 60 * 1000);
@@ -1525,11 +1622,12 @@ ${recentContext}\n\n${criteriaPrompt}`;
           );
         };
 
-        const EntryDetailsView = ({ selectedDate, entries, criteria, goToCalendar, goToForm, updateEntryData, globalApiKey, openKeyModal }) => {
+        const EntryDetailsView = ({ selectedDate, entries, criteria, saveCriteria, goToCalendar, goToDashboard, goToForm, updateEntryData, deleteEntry, globalApiKey, openKeyModal }) => {
           const entry = entries?.[selectedDate];
           const [chatInput, setChatInput] = useState("");
           const [isChatting, setIsChatting] = useState(false);
           const [isDeletingTasks, setIsDeletingTasks] = useState(false);
+          const [isReanalyzing, setIsReanalyzing] = useState(false);
           const [tempTasks, setTempTasks] = useState([]); 
           const chatEndRef = useRef(null);
           const topRef = useRef(null);
@@ -1580,13 +1678,79 @@ ${recentContext}\n\n${criteriaPrompt}`;
                 chatHistory: finalHistory, scores: newScores, tasks: newTasks,
                 title: aiResponse.title || title, averageScore: calculateOverallAverage(newScores, criteria)
               });
+
+              if (aiResponse.learned_rule && aiResponse.learned_rule.target_id) {
+                 const targetId = aiResponse.learned_rule.target_id;
+                 const ruleText = aiResponse.learned_rule.rule_text;
+                 
+                 let updatedCriteria = criteria.map(c => {
+                    if (c.id === targetId) {
+                       return { ...c, desc: (c.desc ? c.desc + "\n" : "") + "ملاحظة هامة للتقييم: " + ruleText };
+                    }
+                    if (c.subCriteria) {
+                       return {
+                          ...c,
+                          subCriteria: c.subCriteria.map(sub => 
+                             sub.id === targetId 
+                             ? { ...sub, desc: (sub.desc ? sub.desc + "\n" : "") + "ملاحظة هامة للتقييم: " + ruleText }
+                             : sub
+                          )
+                       };
+                    }
+                    return c;
+                 });
+                 saveCriteria(updatedCriteria);
+              }
+
             } catch (err) {
               updateEntryData(selectedDate, { chatHistory: [...updatedHistory, { sender: 'ai', text: "عذراً، حدث خطأ في الاتصال." }] });
             } finally { setIsChatting(false); }
           };
 
           const startEditingTasks = () => { setTempTasks([...safeTasks]); setIsDeletingTasks(true); };
-          const confirmTaskChanges = () => { updateEntryData(selectedDate, { tasks: tempTasks }); setIsDeletingTasks(false); };
+          
+          const confirmTaskChanges = async () => { 
+            if (tempTasks.length === 0) {
+                if(window.confirm("حذف جميع المهام سيؤدي إلى مسح اليوم بالكامل. هل أنت متأكد؟")) {
+                    deleteEntry(selectedDate);
+                    goToDashboard();
+                }
+                return;
+            }
+            
+            if (tempTasks.length < safeTasks.length) {
+               setIsReanalyzing(true);
+               try {
+                  const hiddenMsg = `تحديث نظام: قام المستخدم بحذف بعض المهام. المهام المتبقية هي: [${tempTasks.join('، ')}]. أعد تقييم يومه واضبط الدرجات بناءً على هذه المهام المتبقية فقط. لا تذكر أي تفاصيل في الرد فقط قل: تم تحديث التقييم والدرجات.`;
+                  const aiResponse = await chatWithJournalAI(entry, chatHistory, hiddenMsg, criteria, globalApiKey);
+                  
+                  let newScores = { ...scores };
+                  criteria.forEach(c => { 
+                     if(c.subCriteria) {
+                        c.subCriteria.forEach(sub => { if (aiResponse[`score_${sub.id}`] !== undefined) newScores[sub.id] = aiResponse[`score_${sub.id}`]; });
+                     } else {
+                        if (aiResponse[`score_${c.id}`] !== undefined) newScores[c.id] = aiResponse[`score_${c.id}`]; 
+                     }
+                  });
+
+                  updateEntryData(selectedDate, { 
+                    tasks: tempTasks, 
+                    scores: newScores, 
+                    averageScore: calculateOverallAverage(newScores, criteria)
+                  });
+               } catch(e) {
+                  alert("فشل تحديث التقييم، سيتم الحفظ بدون تغيير الدرجات.");
+                  updateEntryData(selectedDate, { tasks: tempTasks });
+               } finally {
+                  setIsReanalyzing(false);
+                  setIsDeletingTasks(false);
+               }
+            } else {
+               updateEntryData(selectedDate, { tasks: tempTasks }); 
+               setIsDeletingTasks(false);
+            }
+          };
+
           const cancelTaskChanges = () => { setIsDeletingTasks(false); setTempTasks([]); };
           const removeTempTask = (indexToRemove) => { setTempTasks(tempTasks.filter((_, i) => i !== indexToRemove)); };
           const removeAllTempTasks = () => { setTempTasks([]); };
@@ -1609,6 +1773,8 @@ ${recentContext}\n\n${criteriaPrompt}`;
               </header>
 
               <div className="px-4 -mt-6 z-10 flex flex-col gap-6 relative">
+                
+                {/* قسم إدارة المهام */}
                 <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 pt-10">
                   <div className="flex justify-between items-center mb-4">
                      <div className="flex items-center gap-3">
@@ -1620,9 +1786,11 @@ ${recentContext}\n\n${criteriaPrompt}`;
                          </button>
                        ) : (
                          <div className="flex items-center gap-1.5">
-                           <button onClick={confirmTaskChanges} className="p-1.5 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-colors" title="تأكيد الحفظ"><Check className="text-sm" /></button>
-                           <button onClick={cancelTaskChanges} className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors" title="إلغاء التعديلات"><X className="text-sm" /></button>
-                           <button onClick={removeAllTempTasks} className="px-2 py-1.5 bg-red-100 text-red-600 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors">حذف الكل</button>
+                           <button onClick={confirmTaskChanges} disabled={isReanalyzing} className="p-1.5 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg transition-colors" title="تأكيد الحفظ">
+                             {isReanalyzing ? <Loader className="text-sm animate-spin" /> : <Check className="text-sm" />}
+                           </button>
+                           <button onClick={cancelTaskChanges} disabled={isReanalyzing} className="p-1.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors" title="إلغاء التعديلات"><X className="text-sm" /></button>
+                           <button onClick={removeAllTempTasks} disabled={isReanalyzing} className="px-2 py-1.5 bg-red-100 text-red-600 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors">حذف الكل</button>
                          </div>
                        )}
 
@@ -1630,6 +1798,8 @@ ${recentContext}\n\n${criteriaPrompt}`;
                      <div className="bg-blue-50 text-blue-600 font-black px-3 py-1 rounded-lg text-sm">{displayTasks.length} مهام</div>
                   </div>
                   
+                  {isReanalyzing && <div className="text-center text-sm font-bold text-blue-600 mb-4 animate-pulse">جاري إعادة تقييم اليوم...</div>}
+
                   {displayTasks.length > 0 ? (
                     <ul className="space-y-3">
                       {displayTasks.map((task, idx) => (
@@ -1652,7 +1822,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
                     {criteria.map(cat => {
                       const IconComp = IconMap[cat.icon] || Star;
                       const catScore = getCategoryScore(scores, cat).toFixed(1);
-                      // تحقق هل هذا السجل القديم يمتلك تقييمات للفروع الخاصة بهذا الجانب تحديداً؟
                       const hasSubScores = cat.subCriteria && cat.subCriteria.some(sub => scores[sub.id] !== undefined && !isNaN(scores[sub.id]));
 
                       return (
@@ -1662,23 +1831,24 @@ ${recentContext}\n\n${criteriaPrompt}`;
                             <div className="flex-1 flex justify-between items-end"><span className="font-bold text-gray-800">{cat.label}</span><span className={`font-black text-lg text-gray-900`}>{catScore}/10</span></div>
                           </div>
                           
-                          {/* عرض الجوانب الفرعية بشكل شجري فقط إذا كانت مسجلة في هذا اليوم */}
                           {hasSubScores ? (
-                              <div className="flex flex-col gap-3 pr-4 border-r-2 border-gray-200 mt-4 mb-2">
+                              <div className="flex flex-col gap-4 pr-4 border-r-2 border-gray-200 mt-4 mb-2">
                                   {cat.subCriteria.map(sub => {
-                                      // إخفاء الفرع إذا لم يقم الذكاء الاصطناعي بتقييمه أصلاً في هذا اليوم
                                       if(scores[sub.id] === undefined || isNaN(scores[sub.id])) return null;
                                       const subScore = scores[sub.id];
                                       const detail = categoryDetails[sub.id] || "لا يوجد تحليل مفصل.";
                                       return (
-                                          <div key={sub.id} className="flex flex-col gap-1">
+                                          <div key={sub.id} className="flex flex-col gap-1.5">
                                               <div className="flex justify-between items-center text-sm">
                                                   <span className="font-bold text-gray-700 flex items-center gap-2">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>{sub.label}
+                                                    <span className="w-2 h-2 rounded-full bg-gray-400"></span>{sub.label}
                                                   </span>
                                                   <span className="font-black text-gray-500">{subScore}/10</span>
                                               </div>
-                                              <div className="text-xs text-gray-500 font-medium leading-relaxed pr-3">{detail}</div>
+                                              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                <div className={`h-full ${cat.colorObj.main} opacity-75 rounded-full transition-all`} style={{ width: `${(subScore / 10) * 100}%` }}></div>
+                                              </div>
+                                              <div className="text-xs text-gray-500 font-medium leading-relaxed pr-3 mt-1">{detail}</div>
                                           </div>
                                       )
                                   })}
@@ -1726,7 +1896,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                   <div className="p-4 bg-slate-50 min-h-[150px] max-h-[300px] overflow-y-auto flex flex-col gap-3">
                     {(!chatHistory || chatHistory.length === 0) && (
                       <div className="text-center text-gray-400 font-medium text-xs my-auto">
-                        هل نسيت شيئاً؟ تحدث معي لتعديل يومك وقائمة مهامك!
+                        هل نسيت شيئاً؟ أو هل الذكاء الاصطناعي أخطأ في التقييم؟ أخبرني ليتم التعديل وحفظ القاعدة!
                       </div>
                     )}
                     {chatHistory && chatHistory.map((msg, idx) => (
@@ -1739,7 +1909,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                     {isChatting && (
                       <div className="flex justify-start">
                         <div className="bg-white border border-gray-200 text-gray-500 p-3 rounded-2xl rounded-tr-sm shadow-sm flex items-center gap-2 text-sm">
-                          <Loader className="text-sm animate-spin" /> جاري التفكير...
+                          <Loader className="text-sm animate-spin" /> جاري التفكير والتعلم...
                         </div>
                       </div>
                     )}
@@ -1750,7 +1920,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                     <input 
                       type="text" value={chatInput} onChange={e => setChatInput(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                      placeholder={globalApiKey ? "أخبرني المزيد لإضافته أو تعديله..." : "أدخل المفتاح أولاً للدردشة..."}
+                      placeholder={globalApiKey ? "مثال: لماذا تقييمي ناقص في الصلاة؟" : "أدخل المفتاح أولاً للدردشة..."}
                       disabled={!globalApiKey}
                       className="flex-1 bg-gray-100 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium disabled:opacity-50"
                     />
@@ -1766,7 +1936,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
         };
 
         // ==========================================
-        // 8. المكون الرئيسي والتطبيق (مع نظام المفتاح المنبثق)
+        // 8. المكون الرئيسي والتطبيق
         // ==========================================
         function MainApp({ user }) {
           const [entries, setEntries] = useState({});
@@ -1825,7 +1995,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
               if (docSnap.exists) {
                 const data = docSnap.data();
                 if (data.criteria && Array.isArray(data.criteria) && data.criteria.length > 0 && isMounted) {
-                   // دمج المعايير المحفوظة مع الافتراضية لضمان وجود الجوانب الفرعية للإعدادات القديمة
                    let mergedCriteria = data.criteria.map(savedCat => {
                        const defaultCat = defaultCriteria.find(dc => dc.id === savedCat.id);
                        if (defaultCat && (!savedCat.subCriteria || savedCat.subCriteria.length === 0)) {
@@ -1868,6 +2037,13 @@ ${recentContext}\n\n${criteriaPrompt}`;
             const newData = { ...entries[date], ...updatedData };
             setEntries(prev => ({ ...prev, [date]: newData }));
             try { await db.doc(`artifacts/${appIdStr}/users/${user.uid}/entries/${date}`).set(newData, { merge: true }); } catch(e) {}
+          };
+
+          const deleteEntryData = async (date) => {
+            const newEntries = { ...entries };
+            delete newEntries[date];
+            setEntries(newEntries);
+            try { await db.doc(`artifacts/${appIdStr}/users/${user.uid}/entries/${date}`).delete(); } catch(e) {}
           };
 
           const saveEntryData = async (date, data) => {
@@ -1944,18 +2120,12 @@ ${recentContext}\n\n${criteriaPrompt}`;
                 </div>
               )}
 
-              {isLoadingData || isCheckingKey ? (
-                <div className="flex-1 flex items-center justify-center"><Loader className="text-4xl animate-spin text-blue-500" /></div>
-              ) : (
-                <>
-                  {currentView === 'dashboard' && <DashboardView entries={entries} criteria={criteria} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToCalendar={() => {setCurrentMonth(new Date()); setCurrentView('calendar');}} goToYear={() => {setCurrentYear(new Date().getFullYear()); setCurrentView('year');}} goToSettings={() => setCurrentView('settings')} />}
-                  {currentView === 'settings' && <SettingsView criteria={criteria} saveCriteria={saveCriteriaData} goToDashboard={() => setCurrentView('dashboard')} />}
-                  {currentView === 'calendar' && <CalendarView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} goToDashboard={() => setCurrentView('dashboard')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
-                  {currentView === 'year' && <YearView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentYear={currentYear} setCurrentYear={setCurrentYear} goToDashboard={() => setCurrentView('dashboard')} setCurrentMonth={setCurrentMonth} setCurrentView={setCurrentView} />}
-                  {currentView === 'form' && <EntryFormView selectedDate={selectedDate} setSelectedDate={setSelectedDate} entries={entries} criteria={criteria} saveEntry={saveEntryData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
-                  {currentView === 'details' && <EntryDetailsView selectedDate={selectedDate} entries={entries} criteria={criteria} updateEntryData={updateEntryData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} />}
-                </>
-              )}
+              {currentView === 'dashboard' && <DashboardView entries={entries} criteria={criteria} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToCalendar={() => {setCurrentMonth(new Date()); setCurrentView('calendar');}} goToYear={() => {setCurrentYear(new Date().getFullYear()); setCurrentView('year');}} goToSettings={() => setCurrentView('settings')} />}
+              {currentView === 'settings' && <SettingsView criteria={criteria} saveCriteria={saveCriteriaData} goToDashboard={() => setCurrentView('dashboard')} />}
+              {currentView === 'calendar' && <CalendarView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} goToDashboard={() => setCurrentView('dashboard')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
+              {currentView === 'year' && <YearView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentYear={currentYear} setCurrentYear={setCurrentYear} goToDashboard={() => setCurrentView('dashboard')} setCurrentMonth={setCurrentMonth} setCurrentView={setCurrentView} />}
+              {currentView === 'form' && <EntryFormView selectedDate={selectedDate} setSelectedDate={setSelectedDate} entries={entries} criteria={criteria} saveEntry={saveEntryData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
+              {currentView === 'details' && <EntryDetailsView selectedDate={selectedDate} entries={entries} criteria={criteria} updateEntryData={updateEntryData} deleteEntry={deleteEntryData} saveCriteria={saveCriteriaData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToDashboard={() => setCurrentView('dashboard')} goToCalendar={() => setCurrentView('calendar')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} />}
 
               {currentView === 'dashboard' && (
                 <div className="absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none z-50">
