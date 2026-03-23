@@ -859,14 +859,24 @@ ${recentContext}\n\n${criteriaPrompt}`;
           );
         };
 
-        const DashboardView = ({ entries, criteria, globalApiKey, goToCalendar, goToYear, goToSettings, openKeyModal }) => {
+        const DashboardView = ({ entries, criteria, globalApiKey, goToCalendar, goToYear, goToSettings, openKeyModal, savedInsights, saveDashboardInsightsData }) => {
           const [dashboardFilter, setDashboardFilter] = useState('40days');
-          const [insights, setInsights] = useState(null);
+          
+          // سحب البيانات المحفوظة مسبقاً بناءً على الفلتر الحالي
+          const currentSaved = savedInsights?.[dashboardFilter] || null;
+          const [insights, setInsights] = useState(currentSaved?.data || null);
+          const [dashboardChatHistory, setDashboardChatHistory] = useState(currentSaved?.chatHistory || []);
           const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
           const [dashboardChatInput, setDashboardChatInput] = useState("");
           const [isDashboardChatting, setIsDashboardChatting] = useState(false);
-          const [dashboardChatHistory, setDashboardChatHistory] = useState([]);
           const dashboardChatEndRef = useRef(null);
+
+          // تزامن البيانات المحفوظة عند تغيير فترة العرض (شهر، سنة، 40 يوم)
+          useEffect(() => {
+             const saved = savedInsights?.[dashboardFilter] || null;
+             setInsights(saved?.data || null);
+             setDashboardChatHistory(saved?.chatHistory || []);
+          }, [dashboardFilter, savedInsights]);
 
           const filteredEntries = useMemo(() => {
             try {
@@ -929,12 +939,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
             return { avg: (sumAvg / len).toFixed(1), totalTasks: tTasks, criteriaScores: finalScores };
           }, [filteredEntries, criteria]);
 
-          // تفريغ المحادثة والنتائج عند تغيير الفلتر
-          useEffect(() => {
-             setInsights(null);
-             setDashboardChatHistory([]);
-          }, [dashboardFilter]);
-
           useEffect(() => { dashboardChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [dashboardChatHistory]);
 
           const handleGenerateInsights = async () => {
@@ -942,7 +946,10 @@ ${recentContext}\n\n${criteriaPrompt}`;
               setIsGeneratingInsights(true);
               try { 
                 const res = await generateDashboardInsightsAI(filteredEntries, criteria, globalApiKey); 
-                if (res) setInsights(res); 
+                if (res) {
+                    const todayStr = `${new Date().getFullYear()}/${new Date().getMonth() + 1}/${new Date().getDate()}`;
+                    await saveDashboardInsightsData(dashboardFilter, res, [], todayStr);
+                }
               } catch(e) { alert(e.message); } 
               finally { setIsGeneratingInsights(false); }
           };
@@ -961,15 +968,19 @@ ${recentContext}\n\n${criteriaPrompt}`;
               try {
                 const aiResponse = await chatWithDashboardAI(insights, newHistory, userMsg, globalApiKey);
                 const finalHistory = [...newHistory, { sender: 'ai', text: aiResponse.reply || "تم تحديث البيانات المرافقة." }];
-                setDashboardChatHistory(finalHistory);
-
+                
+                let newInsightsData = { ...insights };
                 if (aiResponse.updated_insights) {
-                  setInsights(prev => ({
-                    ...prev,
+                  newInsightsData = {
+                    ...newInsightsData,
                     ...(aiResponse.updated_insights.general_description ? {general_description: aiResponse.updated_insights.general_description} : {}),
                     ...(aiResponse.updated_insights.general_suggestions ? {general_suggestions: aiResponse.updated_insights.general_suggestions} : {}),
-                  }));
+                  };
                 }
+
+                // حفظ البيانات المحدثة والمحادثة في قاعدة البيانات
+                await saveDashboardInsightsData(dashboardFilter, newInsightsData, finalHistory, currentSaved?.lastUpdated);
+                
               } catch(e) {
                  setDashboardChatHistory([...newHistory, { sender: 'ai', text: "عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي." }]);
               } finally {
@@ -1039,16 +1050,32 @@ ${recentContext}\n\n${criteriaPrompt}`;
                    </div>
                 )}
 
+                {filteredEntries.length > 0 && globalApiKey && (
+                  <button onClick={handleGenerateInsights} disabled={isGeneratingInsights} className="w-full bg-gradient-to-l from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-white rounded-[2rem] p-5 shadow-lg shadow-amber-500/30 flex flex-col items-center justify-center transition-all transform active:scale-95 disabled:opacity-70 mt-4 border-2 border-yellow-300 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 opacity-0 hover:opacity-100 transition-opacity"></div>
+                    {isGeneratingInsights ? (
+                      <div className="flex items-center gap-3 relative z-10">
+                         <Loader className="text-2xl animate-spin"/>
+                         <span className="font-black text-xl">يتم بناء الخطة...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-2 mb-1 relative z-10">
+                           <Sparkles className="text-2xl" />
+                           <span className="font-black text-xl">القيام بتحليل شامل</span>
+                        </div>
+                        <span className="text-xs font-bold text-yellow-100 bg-black/10 px-3 py-1 rounded-full mt-1 relative z-10">
+                          {currentSaved?.lastUpdated ? `التحليل الأخير: ${currentSaved.lastUpdated}` : 'لم يتم إجراء تحليل لهذه الفترة'}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )}
+
                 {filteredEntries.length > 0 && (
                   <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
                     <div className="flex justify-between items-center mb-6">
                         <h3 className="text-gray-800 font-black text-lg flex items-center gap-2"><Activity className="text-lg text-blue-500" /> التحليل العام</h3>
-                        {globalApiKey && !insights && (
-                            <button onClick={handleGenerateInsights} disabled={isGeneratingInsights} className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 flex gap-2">
-                                {isGeneratingInsights ? <Loader className="animate-spin text-sm"/> : <Sparkles className="text-sm"/>}
-                                <span>{isGeneratingInsights ? "يتم التوليد..." : "توليد النصائح"}</span>
-                            </button>
-                        )}
                     </div>
 
                     <div className="flex flex-col gap-8">
@@ -1081,7 +1108,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
                                                     </span>
                                                     <span className="font-black text-gray-500">{subScore}/10</span>
                                                 </div>
-                                                {/* شريط التقدم للجانب الفرعي */}
                                                 <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                                   <div className={`h-full ${cat.colorObj.main} opacity-70 rounded-full transition-all`} style={{ width: `${(parseFloat(subScore) / 10) * 100}%` }}></div>
                                                 </div>
@@ -2069,6 +2095,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
           const [entries, setEntries] = useState({});
           const [monthlyTitles, setMonthlyTitles] = useState({});
           const [criteria, setCriteria] = useState(defaultCriteria);
+          const [savedInsights, setSavedInsights] = useState(null);
           
           const [globalApiKey, setGlobalApiKey] = useState(null);
           const [isCheckingKey, setIsCheckingKey] = useState(true);
@@ -2132,11 +2159,24 @@ ${recentContext}\n\n${criteriaPrompt}`;
                    setCriteria(mergedCriteria);
                 }
                 if (data.monthlyTitles && isMounted) setMonthlyTitles(data.monthlyTitles);
+                if (data.savedInsights && isMounted) setSavedInsights(data.savedInsights);
               }
             });
 
             return () => { isMounted = false; unsubEntries(); unsubSettings(); };
           }, [user]);
+
+          const saveDashboardInsightsData = async (filterKey, insightsData, chatHistory, dateString) => {
+            const currentSaved = savedInsights || {};
+            const newSaved = {
+              ...currentSaved,
+              [filterKey]: { data: insightsData, chatHistory: chatHistory || [], lastUpdated: dateString }
+            };
+            setSavedInsights(newSaved);
+            try {
+              await db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).set({ savedInsights: newSaved }, { merge: true });
+            } catch(e) { console.error("خطأ في حفظ الإحصائيات", e); }
+          };
 
           const handleSaveGlobalKey = async () => {
             if(!inputKey.trim()) return alert("يرجى إدخال المفتاح أولاً.");
@@ -2247,7 +2287,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                 </div>
               )}
 
-              {currentView === 'dashboard' && <DashboardView entries={entries} criteria={criteria} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToCalendar={() => {setCurrentMonth(new Date()); setCurrentView('calendar');}} goToYear={() => {setCurrentYear(new Date().getFullYear()); setCurrentView('year');}} goToSettings={() => setCurrentView('settings')} />}
+              {currentView === 'dashboard' && <DashboardView entries={entries} criteria={criteria} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToCalendar={() => {setCurrentMonth(new Date()); setCurrentView('calendar');}} goToYear={() => {setCurrentYear(new Date().getFullYear()); setCurrentView('year');}} goToSettings={() => setCurrentView('settings')} savedInsights={savedInsights} saveDashboardInsightsData={saveDashboardInsightsData} />}
               {currentView === 'settings' && <SettingsView criteria={criteria} saveCriteria={saveCriteriaData} goToDashboard={() => setCurrentView('dashboard')} />}
               {currentView === 'calendar' && <CalendarView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} goToDashboard={() => setCurrentView('dashboard')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
               {currentView === 'year' && <YearView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentYear={currentYear} setCurrentYear={setCurrentYear} goToDashboard={() => setCurrentView('dashboard')} setCurrentMonth={setCurrentMonth} setCurrentView={setCurrentView} />}
