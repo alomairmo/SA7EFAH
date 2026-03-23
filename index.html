@@ -19,9 +19,11 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
+        /* إصلاح التوسيط والدوران */
         i.fas, i.fa-solid { display: inline-flex !important; align-items: center !important; justify-content: center !important; line-height: 1 !important; }
         i.fa-spin { transform-origin: 50% 50% !important; display: inline-block !important; text-align: center; }
 
+        /* كلاسات العرض بملء الشاشة (Landscape) للهواتف */
         @media screen and (orientation: portrait) {
             .chart-fullscreen {
                 position: fixed !important;
@@ -147,7 +149,7 @@
           render() {
             if (this.state.hasError) {
               return (
-                <div className="flex flex-col items-center justify-center h-screen bg-slate-900 p-6 text-center" dir="rtl">
+                <div className="flex flex-col items-center justify-center h-[100dvh] bg-slate-900 p-6 text-center" dir="rtl">
                   <AlertCircle className="text-6xl text-red-500 mb-4" />
                   <h1 className="text-2xl font-bold text-red-500 mb-2">عذراً، حدث خطأ في النظام</h1>
                   <p className="text-gray-400 mb-6 text-sm max-w-sm" dir="ltr">{this.state.errorMsg}</p>
@@ -165,17 +167,20 @@
         const getValidGeminiModel = async (apiKey) => {
           if (!apiKey) throw new Error("API_KEY_MISSING");
           if (window.discoveredModelCache) return window.discoveredModelCache;
+
           try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
             const data = await res.json();
+            
             if (data.error) throw new Error(data.error.message);
+
             if (data.models && data.models.length > 0) {
               const validModels = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
               let selected = validModels.find(m => m.name === 'models/gemini-1.5-flash') ||
-                             validModels.find(m => m.name.includes("1.5-flash")) ||
                              validModels.find(m => m.name.includes("flash")) ||
                              validModels.find(m => m.name.includes("pro")) ||
                              validModels[0];
+              
               if (selected) {
                 window.discoveredModelCache = selected.name.replace('models/', '');
                 return window.discoveredModelCache;
@@ -270,12 +275,14 @@
             try {
               const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
               const data = await response.json();
+              
               if (!response.ok) {
                   if(data.error?.message?.includes("Quota") || response.status === 429) {
                       throw new Error("تجاوزت حد الطلبات المجانية. يرجى الانتظار لمدة دقيقة والمحاولة مجدداً.");
                   }
                   throw new Error(data.error?.message || `خطأ اتصال مع الخادم`);
               }
+
               const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
               if (!resultText) throw new Error("استجابة فارغة من الذكاء الاصطناعي");
               return JSON.parse(cleanJSONString(resultText));
@@ -429,7 +436,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
           return await fetchWithRetry(url, payload);
         };
 
-        // دالة الدردشة الخاصة بلوحة التحكم
         const chatWithDashboardAI = async (currentInsights, chatHistory, userMessage, apiKey) => {
           if (!apiKey) throw new Error("مفتاح الذكاء الاصطناعي مفقود.");
           const modelName = await getValidGeminiModel(apiKey);
@@ -649,7 +655,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
           };
 
           return (
-            <div className="flex-1 flex items-center justify-center bg-slate-50 p-6 min-h-screen">
+            <div className="flex-1 flex items-center justify-center bg-slate-50 p-6 min-h-[100dvh]">
               <div className="bg-white w-full max-w-sm rounded-[2rem] p-8 shadow-2xl border border-gray-100 relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-32 bg-slate-900 rounded-b-[3rem] z-0"></div>
                 <div className="relative z-10 flex flex-col items-center mb-8 pt-4">
@@ -702,12 +708,17 @@ ${recentContext}\n\n${criteriaPrompt}`;
 
         const SettingsView = ({ criteria, saveCriteria, goToDashboard }) => {
           const [editingId, setEditingId] = useState(null);
-          const [formData, setFormData] = useState({ label: '', desc: '', icon: 'Star' });
+          const [formData, setFormData] = useState({ label: '', desc: '', icon: '' }); // Default empty to auto-assign
+          const [isFormOpen, setIsFormOpen] = useState(false);
+          const [showIconModal, setShowIconModal] = useState(false);
 
           const handleEditMain = (c) => { 
              setEditingId(c.id); 
              setFormData({ label: c.label, desc: c.desc || '', icon: c.icon }); 
-             window.scrollTo({top: 0, behavior: 'smooth'});
+             setIsFormOpen(true);
+             setTimeout(() => {
+                document.getElementById('main-category-form')?.scrollIntoView({ behavior: 'smooth' });
+             }, 100);
           };
 
           const handleDeleteMain = (id) => {
@@ -719,18 +730,30 @@ ${recentContext}\n\n${criteriaPrompt}`;
 
           const handleSaveMain = () => {
             if (!formData.label.trim()) return alert("اسم الجانب الرئيسي مطلوب");
+            
+            let iconToSave = formData.icon;
+            if (!iconToSave) {
+               const usedIcons = criteria.map(c => c.icon);
+               const availableIcons = Object.keys(IconMap).filter(k => !usedIcons.includes(k));
+               if (availableIcons.length > 0) {
+                  iconToSave = availableIcons[Math.floor(Math.random() * availableIcons.length)];
+               } else {
+                  iconToSave = 'Star';
+               }
+            }
+
             if (editingId) {
-              saveCriteria(criteria.map(c => c.id === editingId ? { ...c, label: formData.label, desc: formData.desc, icon: formData.icon } : c));
+              saveCriteria(criteria.map(c => c.id === editingId ? { ...c, label: formData.label, desc: formData.desc, icon: iconToSave } : c));
             } else {
               const newId = `crit_${Date.now()}`;
               const randomColor = availableColors[Math.floor(Math.random() * availableColors.length)];
-              saveCriteria([...criteria, { id: newId, ...formData, colorObj: randomColor, subCriteria: [] }]);
+              saveCriteria([...criteria, { id: newId, label: formData.label, desc: formData.desc, icon: iconToSave, colorObj: randomColor, subCriteria: [] }]);
             }
-            setEditingId(null); setFormData({ label: '', desc: '', icon: 'Star' });
+            setEditingId(null); setFormData({ label: '', desc: '', icon: '' }); setIsFormOpen(false);
           };
 
           const cancelEditMain = () => {
-            setEditingId(null); setFormData({ label: '', desc: '', icon: 'Star' });
+            setEditingId(null); setFormData({ label: '', desc: '', icon: '' }); setIsFormOpen(false);
           };
 
           const handleAddSub = (parentId) => {
@@ -780,42 +803,8 @@ ${recentContext}\n\n${criteriaPrompt}`;
                   هنا يمكنك إدارة "الجوانب الرئيسية" للتقييم، وإضافة "جوانب فرعية" تندرج تحتها ليقوم الذكاء الاصطناعي بتقييمها بدقة مفصلة.
                 </div>
 
-                <div className="bg-white rounded-3xl p-5 shadow-sm border border-blue-200 mb-6 relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-                  <h2 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
-                    {editingId ? <><Edit3 className="text-blue-500 text-lg"/> <span>تعديل الجانب الرئيسي</span></> : <><Plus className="text-blue-500 text-lg"/> <span>إضافة جانب رئيسي جديد</span></>}
-                  </h2>
-                  <div className="flex flex-col gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 mb-1 block">الأيقونة</label>
-                      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                        {Object.keys(IconMap).map(iconName => {
-                          const IconComp = IconMap[iconName];
-                          return (
-                            <button key={iconName} onClick={() => setFormData({...formData, icon: iconName})} className={`p-3 rounded-xl border shrink-0 transition-all ${formData.icon === iconName ? 'bg-blue-50 border-blue-500 text-blue-600' : 'bg-gray-50 border-transparent text-gray-400 hover:bg-gray-100'}`}>
-                              <IconComp className="text-xl" />
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 mb-1 block">اسم الجانب الرئيسي</label>
-                      <input type="text" value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="مثال: الصحة النفسية..." />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-gray-500 mb-1 block">شرح الجانب للذكاء الاصطناعي (اختياري)</label>
-                      <textarea value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} rows="2" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="اكتب تعليمات مخصصة ليراعيها الذكاء الاصطناعي..."></textarea>
-                    </div>
-                    <div className="flex gap-2">
-                      <button onClick={handleSaveMain} className="flex-1 bg-blue-600 text-white font-bold rounded-xl py-3 shadow-md hover:bg-blue-700 transition">حفظ الجانب الرئيسي</button>
-                      {editingId && <button onClick={cancelEditMain} className="px-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">إلغاء</button>}
-                    </div>
-                  </div>
-                </div>
-
                 <h3 className="text-gray-500 font-bold text-sm mb-3 px-1">الجوانب الحالية ({criteria.length})</h3>
-                <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-5 mb-6">
                   {criteria.map(c => {
                     const IconComp = IconMap[c.icon] || Star;
                     return (
@@ -854,7 +843,68 @@ ${recentContext}\n\n${criteriaPrompt}`;
                     )
                   })}
                 </div>
+
+                {!isFormOpen ? (
+                   <button onClick={() => setIsFormOpen(true)} className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-600 font-bold p-4 rounded-2xl border border-blue-100 hover:bg-blue-100 transition">
+                     <Plus className="text-lg" /> <span>إضافة جانب رئيسي جديد</span>
+                   </button>
+                ) : (
+                  <div id="main-category-form" className="bg-white rounded-3xl p-5 shadow-sm border border-blue-200 mt-2 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <h2 className="text-gray-800 font-bold mb-4 flex items-center gap-2">
+                      {editingId ? <><Edit3 className="text-blue-500 text-lg"/> <span>تعديل الجانب الرئيسي</span></> : <><Plus className="text-blue-500 text-lg"/> <span>إضافة جانب رئيسي جديد</span></>}
+                    </h2>
+                    <div className="flex flex-col gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-gray-500 mb-2 block">الأيقونة</label>
+                        <button onClick={() => setShowIconModal(true)} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 flex items-center justify-between hover:bg-blue-50 transition text-right">
+                           <span className="text-sm font-bold text-gray-600">{formData.icon ? 'تم اختيار الأيقونة بنجاح' : 'اضغط لاختيار أيقونة (أو سيتم الاختيار تلقائياً)'}</span>
+                           {formData.icon ? React.createElement(IconMap[formData.icon], {className: "text-xl text-blue-600"}) : <Grid className="text-xl text-gray-400" />}
+                        </button>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-500 mb-1 block">اسم الجانب الرئيسي</label>
+                        <input type="text" value={formData.label} onChange={e => setFormData({...formData, label: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="مثال: الصحة النفسية..." />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-500 mb-1 block">شرح الجانب للذكاء الاصطناعي (اختياري)</label>
+                        <textarea value={formData.desc} onChange={e => setFormData({...formData, desc: e.target.value})} rows="2" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" placeholder="اكتب تعليمات مخصصة ليراعيها الذكاء الاصطناعي..."></textarea>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <button onClick={handleSaveMain} className="flex-1 bg-blue-600 text-white font-bold rounded-xl py-3 shadow-md hover:bg-blue-700 transition">حفظ الجانب الرئيسي</button>
+                        <button onClick={cancelEditMain} className="px-4 bg-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-300 transition">إلغاء</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {/* نافذة اختيار الأيقونات */}
+              {showIconModal && (
+                <div className="fixed inset-0 bg-slate-900/80 z-[200] flex items-center justify-center p-4 backdrop-blur-sm">
+                  <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+                    <div className="flex justify-between items-center mb-6">
+                       <h3 className="font-black text-gray-800 text-lg">اختر أيقونة</h3>
+                       <button onClick={() => setShowIconModal(false)} className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full transition"><X className="text-sm" /></button>
+                    </div>
+                    <div className="grid grid-cols-5 gap-3 max-h-[50vh] overflow-y-auto p-1 scrollbar-hide" dir="ltr">
+                       {Object.keys(IconMap).map(iconName => {
+                          const IconComp = IconMap[iconName];
+                          const isSelected = formData.icon === iconName;
+                          const isUsed = criteria.some(c => c.icon === iconName) && !isSelected;
+                          return (
+                             <button key={iconName} onClick={() => { setFormData({...formData, icon: iconName}); setShowIconModal(false); }}
+                               className={`aspect-square flex items-center justify-center rounded-2xl transition-all ${isSelected ? 'bg-blue-600 text-white shadow-lg scale-110' : isUsed ? 'bg-gray-100 text-gray-300 cursor-not-allowed' : 'bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600'}`}
+                               disabled={isUsed && !isSelected}
+                             >
+                               <IconComp className="text-xl" />
+                             </button>
+                          )
+                       })}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           );
         };
@@ -862,7 +912,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
         const DashboardView = ({ entries, criteria, globalApiKey, goToCalendar, goToYear, goToSettings, openKeyModal, savedInsights, saveDashboardInsightsData }) => {
           const [dashboardFilter, setDashboardFilter] = useState('40days');
           
-          // سحب البيانات المحفوظة مسبقاً بناءً على الفلتر الحالي
           const currentSaved = savedInsights?.[dashboardFilter] || null;
           const [insights, setInsights] = useState(currentSaved?.data || null);
           const [dashboardChatHistory, setDashboardChatHistory] = useState(currentSaved?.chatHistory || []);
@@ -870,8 +919,12 @@ ${recentContext}\n\n${criteriaPrompt}`;
           const [dashboardChatInput, setDashboardChatInput] = useState("");
           const [isDashboardChatting, setIsDashboardChatting] = useState(false);
           const dashboardChatEndRef = useRef(null);
+          const dashboardTopRef = useRef(null);
+          const insightsRef = useRef(null);
+          const prevDashChatLength = useRef(currentSaved?.chatHistory?.length || 0);
 
-          // تزامن البيانات المحفوظة عند تغيير فترة العرض (شهر، سنة، 40 يوم)
+          useEffect(() => { dashboardTopRef.current?.scrollIntoView({ behavior: 'instant' }); }, []);
+
           useEffect(() => {
              const saved = savedInsights?.[dashboardFilter] || null;
              setInsights(saved?.data || null);
@@ -939,7 +992,12 @@ ${recentContext}\n\n${criteriaPrompt}`;
             return { avg: (sumAvg / len).toFixed(1), totalTasks: tTasks, criteriaScores: finalScores };
           }, [filteredEntries, criteria]);
 
-          useEffect(() => { dashboardChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [dashboardChatHistory]);
+          useEffect(() => { 
+            if (dashboardChatHistory && dashboardChatHistory.length > prevDashChatLength.current) {
+              dashboardChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); 
+            }
+            prevDashChatLength.current = dashboardChatHistory?.length || 0;
+          }, [dashboardChatHistory]);
 
           const handleGenerateInsights = async () => {
               if (filteredEntries.length === 0 || !globalApiKey) return;
@@ -949,6 +1007,9 @@ ${recentContext}\n\n${criteriaPrompt}`;
                 if (res) {
                     const todayStr = `${new Date().getFullYear()}/${new Date().getMonth() + 1}/${new Date().getDate()}`;
                     await saveDashboardInsightsData(dashboardFilter, res, [], todayStr);
+                    setTimeout(() => {
+                        insightsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 500);
                 }
               } catch(e) { alert(e.message); } 
               finally { setIsGeneratingInsights(false); }
@@ -978,7 +1039,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
                   };
                 }
 
-                // حفظ البيانات المحدثة والمحادثة في قاعدة البيانات
                 await saveDashboardInsightsData(dashboardFilter, newInsightsData, finalHistory, currentSaved?.lastUpdated);
                 
               } catch(e) {
@@ -990,6 +1050,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
 
           return (
             <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-32">
+              <div ref={dashboardTopRef} />
               <header className="bg-slate-900 text-white p-6 pb-8 shadow-xl rounded-b-[2.5rem] relative overflow-hidden">
                 <div className="flex justify-between items-center mb-6 relative z-10">
                   <h1 className="text-xl font-extrabold flex items-center gap-2"><LayoutDashboard className="text-xl text-blue-400" /> إحصائياتي</h1>
@@ -1073,9 +1134,9 @@ ${recentContext}\n\n${criteriaPrompt}`;
                 )}
 
                 {filteredEntries.length > 0 && (
-                  <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
+                  <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6" ref={insightsRef}>
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-gray-800 font-black text-lg flex items-center gap-2"><Activity className="text-lg text-blue-500" /> التحليل العام</h3>
+                        <h3 className="text-gray-800 font-black text-lg flex items-center gap-2"><Activity className="text-lg text-blue-500" /> التحليل الشامل</h3>
                     </div>
 
                     <div className="flex flex-col gap-8">
@@ -1095,7 +1156,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
                               <div className={`h-full ${cat.colorObj.main} rounded-full transition-all duration-1000`} style={{ width: `${(parseFloat(score) / 10) * 100}%` }}></div>
                             </div>
 
-                            {/* الفروع مع أشرطة الصحة */}
                             {cat.subCriteria && cat.subCriteria.length > 0 && (
                                 <div className="flex flex-col gap-4 pr-4 border-r-2 border-gray-200 mt-4 mb-4">
                                     {cat.subCriteria.map(sub => {
@@ -1127,7 +1187,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
                       })}
                     </div>
                     
-                    {/* التحليل الشامل للذكاء الاصطناعي والمحادثة */}
                     {insights && (
                       <div className="bg-slate-900 p-6 rounded-3xl shadow-xl mt-10 text-white relative overflow-hidden">
                          <div className="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
@@ -1136,7 +1195,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
                          </h3>
                          
                          <div className="flex flex-col gap-6">
-                             {/* الوصف العام الجديد */}
                              {insights.general_description && (
                                <div>
                                    <h4 className="text-blue-400 font-bold mb-2 flex items-center gap-2 text-sm"><User className="text-sm"/> الوصف العام لسلوكك</h4>
@@ -1177,7 +1235,6 @@ ${recentContext}\n\n${criteriaPrompt}`;
                              )}
                          </div>
 
-                         {/* صندوق دردشة لوحة التحليل الشامل */}
                          <div className="bg-slate-800 rounded-2xl shadow-inner border border-slate-700 flex flex-col overflow-hidden mt-8">
                            <div className="bg-slate-900 p-3 flex items-center gap-3 border-b border-slate-700">
                              <MessageSquare className="text-lg text-blue-400" />
@@ -1636,7 +1693,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
               
               let scoresObj = {}, detailsObj = {};
               criteria.forEach(c => {
-                 if(c.subCriteria) {
+                 if(c.subCriteria && c.subCriteria.length > 0) {
                      c.subCriteria.forEach(sub => {
                          scoresObj[sub.id] = parseInt(aiResult?.[`score_${sub.id}`]) || 0;
                          detailsObj[sub.id] = aiResult?.[`detail_${sub.id}`] || "";
@@ -2252,10 +2309,10 @@ ${recentContext}\n\n${criteriaPrompt}`;
           const showGlobalKeyModal = globalApiKey === "";
 
           return (
-            <div className="w-full h-full relative flex flex-col" dir="rtl">
+            <div className="w-full min-h-[100dvh] relative flex flex-col" dir="rtl">
               
               {(showGlobalKeyModal || showKeyModal) && (
-                <div className="absolute inset-0 bg-slate-900/90 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+                <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-[150] flex items-center justify-center p-6">
                   <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm flex flex-col gap-4 relative overflow-hidden">
                      <div className="absolute top-0 left-0 right-0 h-2 bg-blue-500"></div>
                      {!showGlobalKeyModal && (
@@ -2295,7 +2352,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
               {currentView === 'details' && <EntryDetailsView selectedDate={selectedDate} entries={entries} criteria={criteria} updateEntryData={updateEntryData} deleteEntry={deleteEntryData} saveCriteria={saveCriteriaData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToDashboard={() => setCurrentView('dashboard')} goToCalendar={() => setCurrentView('calendar')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} />}
 
               {currentView === 'dashboard' && (
-                <div className="absolute bottom-6 left-0 right-0 flex justify-center pointer-events-none z-50">
+                <div className="fixed bottom-8 left-0 right-0 flex justify-center pointer-events-none z-[100]">
                   <button onClick={() => {
                     const todayStr = new Date().toISOString().split('T')[0];
                     setSelectedDate(todayStr);
@@ -2327,19 +2384,19 @@ ${recentContext}\n\n${criteriaPrompt}`;
 
           return (
             <ErrorBoundary>
-              <div id="app-root-wrapper" className="w-full h-full min-h-screen">
+              <div id="app-root-wrapper" className="w-full h-full min-h-[100dvh]">
                 {authLoading && (
-                  <div key="loading" className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center">
+                  <div key="loading" className="max-w-md mx-auto h-[100dvh] bg-slate-50 flex items-center justify-center">
                     <Loader className="text-4xl animate-spin text-blue-500" />
                   </div>
                 )}
                 {!authLoading && user && (
-                  <div key="main-app" className="max-w-md mx-auto h-screen bg-slate-100 shadow-2xl font-sans relative flex flex-col overflow-hidden" dir="rtl">
+                  <div key="main-app" className="max-w-md mx-auto h-[100dvh] bg-slate-100 shadow-2xl font-sans relative flex flex-col overflow-hidden" dir="rtl">
                     <MainApp user={user} />
                   </div>
                 )}
                 {!authLoading && !user && (
-                  <div key="auth-view" className="w-full h-full">
+                  <div key="auth-view" className="w-full h-[100dvh]">
                     <AuthView />
                   </div>
                 )}
