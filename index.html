@@ -19,11 +19,9 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* إصلاح التوسيط والدوران */
         i.fas, i.fa-solid { display: inline-flex !important; align-items: center !important; justify-content: center !important; line-height: 1 !important; }
         i.fa-spin { transform-origin: 50% 50% !important; display: inline-block !important; text-align: center; }
 
-        /* كلاسات العرض بملء الشاشة (Landscape) للهواتف */
         @media screen and (orientation: portrait) {
             .chart-fullscreen {
                 position: fixed !important;
@@ -108,8 +106,7 @@
         const Compass = createIcon('fas fa-compass fa-fw'); const Feather = createIcon('fas fa-feather fa-fw');
         const Flame = createIcon('fas fa-fire fa-fw'); const Maximize = createIcon('fas fa-expand fa-fw');
         const Minimize = createIcon('fas fa-compress fa-fw'); const PlusIcon = createIcon('fas fa-plus fa-fw');
-        const MinusIcon = createIcon('fas fa-minus fa-fw'); const Info = createIcon('fas fa-info-circle fa-fw');
-        const TrendingDown = createIcon('fas fa-arrow-trend-down fa-fw');
+        const MinusIcon = createIcon('fas fa-minus fa-fw');
 
         // ==========================================
         // 2. إعدادات قواعد البيانات فقط 
@@ -168,20 +165,17 @@
         const getValidGeminiModel = async (apiKey) => {
           if (!apiKey) throw new Error("API_KEY_MISSING");
           if (window.discoveredModelCache) return window.discoveredModelCache;
-
           try {
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
             const data = await res.json();
-            
             if (data.error) throw new Error(data.error.message);
-
             if (data.models && data.models.length > 0) {
               const validModels = data.models.filter(m => m.supportedGenerationMethods?.includes("generateContent"));
               let selected = validModels.find(m => m.name === 'models/gemini-1.5-flash') ||
+                             validModels.find(m => m.name.includes("1.5-flash")) ||
                              validModels.find(m => m.name.includes("flash")) ||
                              validModels.find(m => m.name.includes("pro")) ||
                              validModels[0];
-              
               if (selected) {
                 window.discoveredModelCache = selected.name.replace('models/', '');
                 return window.discoveredModelCache;
@@ -419,18 +413,57 @@ ${recentContext}\n\n${criteriaPrompt}`;
 
           let dynamicProperties = { 
             overallTitle: { type: "STRING", description: "لقب عام لملخص هذه الفترة" },
+            general_description: { type: "STRING", description: "وصف عام يلخص شخصية المستخدم وسلوكه وسماته في هذه الفترة بناءً على يومياته" },
             general_positives: { type: "ARRAY", items: { type: "STRING" }, description: "أهم 3 إيجابيات في مسيرته" },
             general_negatives: { type: "ARRAY", items: { type: "STRING" }, description: "أبرز السلبيات أو القصور" },
             general_trends: { type: "STRING", description: "كيف يتطور أو يتراجع المستخدم خلال هذه الفترة؟" },
             general_suggestions: { type: "STRING", description: "خطة عمل سريعة أو مقترحات شاملة" }
           };
-          let requiredKeys = ["overallTitle", "general_positives", "general_negatives", "general_trends", "general_suggestions"];
+          let requiredKeys = ["overallTitle", "general_description", "general_positives", "general_negatives", "general_trends", "general_suggestions"];
           
           criteria.forEach(c => { dynamicProperties[`advice_${c.id}`] = { type: "STRING", description: `توصية لجانب ${c.label}` }; requiredKeys.push(`advice_${c.id}`); });
 
           const systemPrompt = "أنت خبير نفسي ومحلل بيانات محترف. ادرس ملخص يوميات المستخدم خلال هذه الفترة بدقة، ثم استخرج تحليلاً شاملاً لشخصيته وتطوره وضع له خطة عمل ونقاط قوة وضعف بناءً على البيانات المتوفرة فقط.";
           const payload = buildSafePayload(modelName, systemPrompt, [{ text: `ملخص أيامي:\n${entriesSummary}` }], dynamicProperties, requiredKeys);
           
+          return await fetchWithRetry(url, payload);
+        };
+
+        // دالة الدردشة الخاصة بلوحة التحكم
+        const chatWithDashboardAI = async (currentInsights, chatHistory, userMessage, apiKey) => {
+          if (!apiKey) throw new Error("مفتاح الذكاء الاصطناعي مفقود.");
+          const modelName = await getValidGeminiModel(apiKey);
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+          const historyContext = chatHistory.map(msg => `${msg.sender === 'user' ? 'المستخدم' : 'الذكاء الاصطناعي'}: ${msg.text}`).join('\n');
+
+          const insightsContext = `التحليل الشامل الحالي للمستخدم:
+          - الوصف العام: ${currentInsights.general_description || "غير متوفر"}
+          - الإيجابيات: ${(currentInsights.general_positives || []).join('، ')}
+          - السلبيات: ${(currentInsights.general_negatives || []).join('، ')}
+          - التطور: ${currentInsights.general_trends || "غير متوفر"}
+          - خطة العمل الحالية: ${currentInsights.general_suggestions || "غير متوفر"}`;
+
+          const systemPrompt = `أنت خبير نفسي ومدرب حياة (Life Coach) ذكي.
+أنت تناقش المستخدم حول "التحليل الشامل" لأدائه في الفترة الأخيرة.
+بناءً على التحليل الشامل الحالي والدردشة السابقة، أجب على رسالة المستخدم بلغة عربية سلسة ومشجعة.
+إذا قام المستخدم بتصحيح فهم خاطئ لك، أو طلب نصيحة محددة واستحسنتها، قم بتحديث "الوصف العام" أو "خطة العمل والتحسين" ليعكس هذا التعديل.
+
+أرجع النتيجة بصيغة JSON تحتوي على:
+1. "reply": ردك على المستخدم.
+2. "updated_insights": (اختياري) كائن يحتوي على "general_description" (الوصف العام المحدث) و/أو "general_suggestions" (خطة العمل المحدثة متضمنة النصائح الجديدة). أرجعه فقط إذا كان هناك حاجة للتعديل.`;
+
+          let dynamicProperties = {
+            reply: { type: "STRING", description: "ردك المباشر على المستخدم" },
+            updated_insights: {
+              type: "OBJECT",
+              properties: {
+                general_description: { type: "STRING", description: "الوصف العام المحدث (إن وجد)" },
+                general_suggestions: { type: "STRING", description: "خطة العمل المحدثة متضمنة النصائح الجديدة (إن وجد)" }
+              }
+            }
+          };
+
+          const payload = buildSafePayload(modelName, systemPrompt, [{ text: `التحليل الحالي:\n${insightsContext}\n\nسجل المحادثة:\n${historyContext}\n\nرسالة المستخدم: ${userMessage}` }], dynamicProperties, ["reply"]);
           return await fetchWithRetry(url, payload);
         };
 
@@ -497,12 +530,11 @@ ${recentContext}\n\n${criteriaPrompt}`;
         const BarChartComponent = ({ data, onBarClick, zoomLevel, isFullscreen, chartMetric }) => {
           const isTasks = chartMetric === 'tasksCount';
           const maxVal = isTasks ? Math.max(10, ...data.map(d => d.entry?.tasks?.length || d.entriesCount || 0)) : 10;
-          // تعديل العرض ليتمدد مع التكبير بدون اختفاء الأعمدة
-          const containerWidth = Math.max(100, zoomLevel * 100); 
+          const containerWidth = Math.max(100, zoomLevel * 100);
           
           return (
             <div className={`w-full overflow-x-auto scrollbar-hide ${isFullscreen ? 'flex-1 pt-6' : 'h-[300px] pt-12'}`}>
-              <div className={`flex items-end justify-between px-2 gap-1 ${isFullscreen ? 'h-[90%]' : 'h-full'}`} style={{ minWidth: `${containerWidth}%` }}>
+              <div className={`flex items-end justify-between min-w-full px-2 gap-[2px] ${isFullscreen ? 'h-[90%]' : 'h-full'}`} style={{ width: `${containerWidth}%` }}>
                  {data.map((d, i) => {
                     const score = isTasks ? (d.entry?.tasks?.length || (d.entriesCount > 0 ? d.avgTasks : 0)) : parseFloat(d.displayScore || 0);
                     const hasData = d.entry || d.entriesCount > 0;
@@ -831,6 +863,10 @@ ${recentContext}\n\n${criteriaPrompt}`;
           const [dashboardFilter, setDashboardFilter] = useState('40days');
           const [insights, setInsights] = useState(null);
           const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+          const [dashboardChatInput, setDashboardChatInput] = useState("");
+          const [isDashboardChatting, setIsDashboardChatting] = useState(false);
+          const [dashboardChatHistory, setDashboardChatHistory] = useState([]);
+          const dashboardChatEndRef = useRef(null);
 
           const filteredEntries = useMemo(() => {
             try {
@@ -893,6 +929,14 @@ ${recentContext}\n\n${criteriaPrompt}`;
             return { avg: (sumAvg / len).toFixed(1), totalTasks: tTasks, criteriaScores: finalScores };
           }, [filteredEntries, criteria]);
 
+          // تفريغ المحادثة والنتائج عند تغيير الفلتر
+          useEffect(() => {
+             setInsights(null);
+             setDashboardChatHistory([]);
+          }, [dashboardFilter]);
+
+          useEffect(() => { dashboardChatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [dashboardChatHistory]);
+
           const handleGenerateInsights = async () => {
               if (filteredEntries.length === 0 || !globalApiKey) return;
               setIsGeneratingInsights(true);
@@ -901,6 +945,36 @@ ${recentContext}\n\n${criteriaPrompt}`;
                 if (res) setInsights(res); 
               } catch(e) { alert(e.message); } 
               finally { setIsGeneratingInsights(false); }
+          };
+
+          const handleDashboardChatSendMessage = async () => {
+              if (!dashboardChatInput.trim() || !insights) return;
+              if (!globalApiKey) return alert("المفتاح العام غير متوفر.");
+              
+              const userMsg = dashboardChatInput;
+              setDashboardChatInput("");
+              
+              const newHistory = [...dashboardChatHistory, { sender: 'user', text: userMsg }];
+              setDashboardChatHistory(newHistory);
+              setIsDashboardChatting(true);
+              
+              try {
+                const aiResponse = await chatWithDashboardAI(insights, newHistory, userMsg, globalApiKey);
+                const finalHistory = [...newHistory, { sender: 'ai', text: aiResponse.reply || "تم تحديث البيانات المرافقة." }];
+                setDashboardChatHistory(finalHistory);
+
+                if (aiResponse.updated_insights) {
+                  setInsights(prev => ({
+                    ...prev,
+                    ...(aiResponse.updated_insights.general_description ? {general_description: aiResponse.updated_insights.general_description} : {}),
+                    ...(aiResponse.updated_insights.general_suggestions ? {general_suggestions: aiResponse.updated_insights.general_suggestions} : {}),
+                  }));
+                }
+              } catch(e) {
+                 setDashboardChatHistory([...newHistory, { sender: 'ai', text: "عذراً، حدث خطأ أثناء الاتصال بالذكاء الاصطناعي." }]);
+              } finally {
+                 setIsDashboardChatting(false);
+              }
           };
 
           return (
@@ -1027,7 +1101,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                       })}
                     </div>
                     
-                    {/* التحليل الشامل الجديد للذكاء الاصطناعي */}
+                    {/* التحليل الشامل للذكاء الاصطناعي والمحادثة */}
                     {insights && (
                       <div className="bg-slate-900 p-6 rounded-3xl shadow-xl mt-10 text-white relative overflow-hidden">
                          <div className="absolute top-0 left-0 w-2 h-full bg-blue-500"></div>
@@ -1036,9 +1110,17 @@ ${recentContext}\n\n${criteriaPrompt}`;
                          </h3>
                          
                          <div className="flex flex-col gap-6">
+                             {/* الوصف العام الجديد */}
+                             {insights.general_description && (
+                               <div>
+                                   <h4 className="text-blue-400 font-bold mb-2 flex items-center gap-2 text-sm"><User className="text-sm"/> الوصف العام لسلوكك</h4>
+                                   <p className="text-sm text-gray-300 font-medium leading-relaxed pr-2 border-r-2 border-blue-500/30">{insights.general_description}</p>
+                               </div>
+                             )}
+
                              {insights.general_positives && insights.general_positives.length > 0 && (
                                <div>
-                                   <h4 className="text-green-400 font-bold mb-2 flex items-center gap-2 text-sm"><CheckCircle className="text-sm"/> نقاط القوة والإيجابيات</h4>
+                                   <h4 className="text-green-400 font-bold mb-2 flex items-center gap-2 text-sm"><CheckCircle2 className="text-sm"/> نقاط القوة والإيجابيات</h4>
                                    <ul className="list-disc list-inside pr-2 space-y-2 text-sm text-gray-300 font-medium leading-relaxed">
                                       {insights.general_positives.map((p, i) => <li key={i}>{p}</li>)}
                                    </ul>
@@ -1067,6 +1149,50 @@ ${recentContext}\n\n${criteriaPrompt}`;
                                    <p className="text-sm text-gray-300 font-medium leading-relaxed pr-2 border-r-2 border-amber-500/30">{insights.general_suggestions}</p>
                                </div>
                              )}
+                         </div>
+
+                         {/* صندوق دردشة لوحة التحليل الشامل */}
+                         <div className="bg-slate-800 rounded-2xl shadow-inner border border-slate-700 flex flex-col overflow-hidden mt-8">
+                           <div className="bg-slate-900 p-3 flex items-center gap-3 border-b border-slate-700">
+                             <MessageSquare className="text-lg text-blue-400" />
+                             <h4 className="text-white font-bold text-xs">مدربك الشخصي (مناقشة التحليل)</h4>
+                           </div>
+                           
+                           <div className="p-4 min-h-[120px] max-h-[250px] overflow-y-auto flex flex-col gap-3">
+                             {(!dashboardChatHistory || dashboardChatHistory.length === 0) && (
+                               <div className="text-center text-slate-400 font-medium text-xs my-auto leading-relaxed">
+                                 هل ترى نقصاً في الوصف العام؟<br/>أو هل تحتاج نصائح مخصصة أكثر لخطتك؟ تحدث معي!
+                               </div>
+                             )}
+                             {dashboardChatHistory.map((msg, idx) => (
+                               <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                 <div className={`max-w-[90%] p-3 rounded-2xl text-xs font-medium leading-relaxed ${msg.sender === 'user' ? 'bg-blue-600 text-white rounded-tl-sm' : 'bg-slate-700 border border-slate-600 text-slate-200 rounded-tr-sm'}`}>
+                                   {msg.text}
+                                 </div>
+                               </div>
+                             ))}
+                             {isDashboardChatting && (
+                               <div className="flex justify-start">
+                                 <div className="bg-slate-700 border border-slate-600 text-slate-400 p-2.5 rounded-2xl rounded-tr-sm flex items-center gap-2 text-xs">
+                                   <Loader className="text-xs animate-spin" /> جاري التحليل والرد...
+                                 </div>
+                               </div>
+                             )}
+                             <div ref={dashboardChatEndRef} />
+                           </div>
+
+                           <div className="p-2.5 bg-slate-800 border-t border-slate-700 flex gap-2">
+                             <input 
+                               type="text" value={dashboardChatInput} onChange={e => setDashboardChatInput(e.target.value)}
+                               onKeyDown={e => e.key === 'Enter' && handleDashboardChatSendMessage()}
+                               placeholder="ناقش أو اطلب نصيحة مخصصة..."
+                               disabled={!globalApiKey || isDashboardChatting}
+                               className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-medium disabled:opacity-50"
+                             />
+                             <button onClick={handleDashboardChatSendMessage} disabled={isDashboardChatting || !dashboardChatInput.trim() || !globalApiKey} className="bg-blue-600 text-white p-2 rounded-xl disabled:opacity-50 hover:bg-blue-700 transition shrink-0">
+                               <Send className="text-base" />
+                             </button>
+                           </div>
                          </div>
                       </div>
                     )}
@@ -1507,7 +1633,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                 title: aiResult?.title || "يومياتي", comparison: aiResult?.comparison || "لا تتوفر مقارنة حالياً.", tips: aiResult?.tips || "استمر في تدوين يومياتك بانتظام.",
                 averageScore: calculateOverallAverage(scoresObj, criteria), chatHistory: entries[selectedDate]?.chatHistory || [] 
               });
-            } catch (err) { setError(`خطأ: ${err.message}`); } finally { setIsAnalyzing(false); }
+            } catch (err) { setError(err.message || "حدث خطأ غير متوقع."); } finally { setIsAnalyzing(false); }
           };
 
           const isExpired = entries?.[selectedDate] && (Date.now() - (entries[selectedDate].timestamp || Date.now())) > (24 * 60 * 60 * 1000);
@@ -1831,6 +1957,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                             <div className="flex-1 flex justify-between items-end"><span className="font-bold text-gray-800">{cat.label}</span><span className={`font-black text-lg text-gray-900`}>{catScore}/10</span></div>
                           </div>
                           
+                          {/* عرض الجوانب الفرعية بشكل شجري فقط إذا كانت مسجلة في هذا اليوم */}
                           {hasSubScores ? (
                               <div className="flex flex-col gap-4 pr-4 border-r-2 border-gray-200 mt-4 mb-2">
                                   {cat.subCriteria.map(sub => {
@@ -1936,7 +2063,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
         };
 
         // ==========================================
-        // 8. المكون الرئيسي والتطبيق
+        // 8. المكون الرئيسي والتطبيق (مع نظام المفتاح المنبثق)
         // ==========================================
         function MainApp({ user }) {
           const [entries, setEntries] = useState({});
