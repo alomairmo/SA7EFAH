@@ -267,18 +267,23 @@
           },
         ];
 
+        // --- إصلاح مشكلة قراءة الأيام القديمة التي لا تحتوي على فروع ---
         const getCategoryScore = (entryScores, category) => {
             if (!entryScores) return 0;
+            // إذا كان المعيار يحتوي على فروع، نقوم بجمع الموجود منها
             if (category.subCriteria && category.subCriteria.length > 0) {
                let sum = 0, count = 0;
                category.subCriteria.forEach(sub => {
-                   if (entryScores[sub.id] !== undefined) {
+                   if (entryScores[sub.id] !== undefined && !isNaN(entryScores[sub.id])) {
                        sum += Number(entryScores[sub.id]);
                        count++;
                    }
                });
-               return count > 0 ? (sum / count) : 0;
+               // إذا وجدنا فروع مسجلة، نرجع متوسطها
+               if (count > 0) return sum / count;
+               // أما إذا كان (count = 0) يعني أن هذا يوم قديم مسجل قبل الفروع، إذن ننزل لنجلب التقييم الرئيسي
             }
+            // جلب التقييم الرئيسي مباشرة (لليوميات القديمة)
             return Number(entryScores[category.id]) || 0;
         };
 
@@ -287,17 +292,9 @@
             let totalSum = 0;
             let totalCount = 0;
             criteria.forEach(c => {
-                if(c.subCriteria && c.subCriteria.length > 0) {
-                    c.subCriteria.forEach(sub => {
-                        const s = Math.max(0, Math.min(10, parseInt(scores[sub.id]) || 0));
-                        totalSum += s;
-                        totalCount++;
-                    });
-                } else {
-                    const s = Math.max(0, Math.min(10, parseInt(scores[c.id]) || 0));
-                    totalSum += s;
-                    totalCount++;
-                }
+                let catScore = getCategoryScore(scores, c);
+                totalSum += catScore;
+                totalCount++;
             });
             return totalCount > 0 ? (totalSum / totalCount).toFixed(1) : "0.0";
         };
@@ -311,18 +308,29 @@
           } catch (e) { return ""; }
         };
 
+        // --- تعديل لرسائل الخطأ الخاصة بحد الاستخدام (Quota Exceeded) ---
         const fetchWithRetry = async (url, payload, retries = 3) => {
           let lastError = null;
           for (let attempt = 1; attempt <= retries; attempt++) {
             try {
               const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
               const data = await response.json();
-              if (!response.ok) throw new Error(data.error?.message || `خطأ اتصال مع الخادم`);
+              
+              if (!response.ok) {
+                  // إذا كان الخطأ بسبب تجاوز الحد المسموح
+                  if(data.error?.message?.includes("Quota exceeded") || response.status === 429) {
+                      throw new Error("عذراً، لقد تجاوزت الحد المسموح به مجانياً لاستخدام الذكاء الاصطناعي في هذه الدقيقة. يرجى الانتظار لمدة دقيقة والمحاولة مجدداً.");
+                  }
+                  throw new Error(data.error?.message || `خطأ اتصال مع الخادم`);
+              }
+
               const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
               if (!resultText) throw new Error("استجابة فارغة من الذكاء الاصطناعي");
               return JSON.parse(cleanJSONString(resultText));
             } catch (err) {
               lastError = err;
+              // عدم المحاولة مجدداً إذا كان الخطأ من نوع تجاوز الحد (لأن ذلك سيزيد الطين بلة)
+              if (err.message.includes("الحد المسموح")) break; 
               if (attempt === retries) break;
               await new Promise(res => setTimeout(res, 1500 * attempt));
             }
@@ -371,7 +379,7 @@
           const systemPrompt = `أنت محلل حياة. حلل يوميات المستخدم بدقة. 
 اللقب: 4 كلمات كحد أقصى.
 المهام: استخرجها جميعاً كمصفوفة نصوص قصيرة.
-التقييم: 0-10 لكل معيار أو معيار فرعي مع تبرير بسطر واحد.
+التقييم: 0-10 لكل معيار أو معيار فرعي مبين أدناه مع تبرير بسطر واحد.
 ${recentContext}\n\n${criteriaPrompt}`;
 
           const parts = [];
@@ -596,11 +604,14 @@ ${recentContext}\n\n${criteriaPrompt}`;
             } else {
               if (!name || !phone || !email || !password) return setError('يرجى تعبئة جميع الحقول لإنشاء الحساب');
             }
+            
             if (!auth) return setError('حدث خطأ في الاتصال بقاعدة البيانات.');
+            
             setError('');
             setLoading(true);
             try {
               await auth.setPersistence(rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION);
+              
               if (isLogin) {
                 await auth.signInWithEmailAndPassword(email, password);
               } else {
@@ -779,36 +790,39 @@ ${recentContext}\n\n${criteriaPrompt}`;
             if (!filteredEntries || filteredEntries.length === 0) return { avg: "0.0", totalTasks: 0, criteriaScores: {} };
             let sumAvg = 0, tTasks = 0;
             let cScores = {};
-            criteria.forEach(c => cScores[c.id] = 0);
+            criteria.forEach(c => {
+                cScores[c.id] = 0;
+                if(c.subCriteria) c.subCriteria.forEach(s => cScores[s.id] = 0);
+            });
             
             filteredEntries.forEach(e => {
               sumAvg += parseFloat(e.averageScore || 0);
               tTasks += (Array.isArray(e?.tasks) ? e.tasks.length : 0);
-              criteria.forEach(c => { cScores[c.id] += getCategoryScore(e?.scores, c); });
+              criteria.forEach(c => { 
+                  cScores[c.id] += getCategoryScore(e?.scores, c); 
+                  if(c.subCriteria) c.subCriteria.forEach(sub => cScores[sub.id] += parseFloat(e.scores?.[sub.id]||0));
+              });
             });
             
             const len = filteredEntries.length;
             let finalScores = {};
-            criteria.forEach(c => { finalScores[c.id] = (cScores[c.id] / len).toFixed(1); });
+            criteria.forEach(c => { 
+                finalScores[c.id] = (cScores[c.id] / len).toFixed(1); 
+                if(c.subCriteria) c.subCriteria.forEach(sub => finalScores[sub.id] = (cScores[sub.id] / len).toFixed(1));
+            });
 
             return { avg: (sumAvg / len).toFixed(1), totalTasks: tTasks, criteriaScores: finalScores };
           }, [filteredEntries, criteria]);
 
-          useEffect(() => {
-            let isMounted = true;
-            if (filteredEntries.length === 0 || !globalApiKey) { setInsights(null); return; }
-            
-            const fetchInsights = async () => {
+          const handleGenerateInsights = async () => {
+              if (filteredEntries.length === 0 || !globalApiKey) return;
               setIsGeneratingInsights(true);
               try { 
                 const res = await generateDashboardInsightsAI(filteredEntries, criteria, globalApiKey); 
-                if (isMounted && res) setInsights(res); 
-              } catch(e) { } 
-              finally { if(isMounted) setIsGeneratingInsights(false); }
-            };
-            fetchInsights();
-            return () => { isMounted = false; };
-          }, [dashboardFilter, filteredEntries, criteria, globalApiKey]);
+                if (res) setInsights(res); 
+              } catch(e) { alert(e.message); } 
+              finally { setIsGeneratingInsights(false); }
+          };
 
           return (
             <div className="flex-1 overflow-y-auto bg-slate-50 relative pb-32">
@@ -836,7 +850,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                       <div className="flex-1 pr-2">
                         <p className="text-white/60 text-xs font-bold uppercase mb-1">اللقب العام</p>
                         <h2 className="text-2xl font-black text-white leading-tight">
-                          {!globalApiKey ? "جاري الإعداد..." : (insights?.overallTitle || (isGeneratingInsights ? <><Loader className="text-xl animate-spin inline" /> <span>مُنجز</span></> : "مُنجز"))}
+                          {!globalApiKey ? "جاري الإعداد..." : (insights?.overallTitle || "اضغط للتوليد")}
                         </h2>
                       </div>
                       <div className="text-center bg-white/10 p-3 rounded-2xl border border-white/10 min-w-[80px]">
@@ -874,7 +888,16 @@ ${recentContext}\n\n${criteriaPrompt}`;
 
                 {filteredEntries.length > 0 && (
                   <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-6">
-                    <h3 className="text-gray-800 font-black text-lg mb-6 flex items-center gap-2"><Activity className="text-lg text-blue-500" /> التحليل العام</h3>
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-gray-800 font-black text-lg flex items-center gap-2"><Activity className="text-lg text-blue-500" /> التحليل العام</h3>
+                        {globalApiKey && !insights && (
+                            <button onClick={handleGenerateInsights} disabled={isGeneratingInsights} className="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 flex gap-2">
+                                {isGeneratingInsights ? <Loader className="animate-spin text-sm"/> : <Sparkles className="text-sm"/>}
+                                {isGeneratingInsights ? "يتم التوليد..." : "توليد النصائح"}
+                            </button>
+                        )}
+                    </div>
+
                     <div className="flex flex-col gap-8">
                       {criteria.map(cat => {
                         const IconComp = IconMap[cat.icon] || Star;
@@ -891,9 +914,24 @@ ${recentContext}\n\n${criteriaPrompt}`;
                             <div className="h-3 bg-gray-100 rounded-full overflow-hidden mb-3">
                               <div className={`h-full ${cat.colorObj.main} rounded-full transition-all duration-1000`} style={{ width: `${(parseFloat(score) / 10) * 100}%` }}></div>
                             </div>
-                            <div className="bg-gray-50 p-4 rounded-2xl text-sm leading-relaxed text-gray-600 font-medium border border-gray-100">
-                               {!globalApiKey ? <span>أضف مفتاح API للحصول على نصائح.</span> : (isGeneratingInsights ? <><Loader className="text-sm animate-spin text-gray-400"/> <span>يتم التحليل...</span></> : <span>{insights?.[`advice_${cat.id}`] || "الذكاء الاصطناعي يحلل بياناتك."}</span>)}
-                            </div>
+
+                            {/* الفروع إن وجدت */}
+                            {cat.subCriteria && cat.subCriteria.length > 0 && (
+                                <div className="flex flex-col gap-2 pr-4 border-r-2 border-gray-200 mt-3 mb-4">
+                                    {cat.subCriteria.map(sub => (
+                                        <div key={sub.id} className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-600 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>{sub.label}</span>
+                                            <span className="font-bold text-gray-800">{stats.criteriaScores[sub.id] || "0.0"}/10</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {insights && (
+                                <div className="bg-gray-50 p-4 rounded-2xl text-sm leading-relaxed text-gray-600 font-medium border border-gray-100">
+                                   {insights[`advice_${cat.id}`]}
+                                </div>
+                            )}
                           </div>
                         )
                       })}
@@ -1658,7 +1696,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
                     {isChatting && (
                       <div className="flex justify-start">
                         <div className="bg-white border border-gray-200 text-gray-500 p-3 rounded-2xl rounded-tr-sm shadow-sm flex items-center gap-2 text-sm">
-                          <Loader className="text-sm animate-spin" /> <span>جاري التفكير...</span>
+                          <Loader className="text-sm animate-spin" /> جاري التفكير...
                         </div>
                       </div>
                     )}
@@ -1685,7 +1723,7 @@ ${recentContext}\n\n${criteriaPrompt}`;
         };
 
         // ==========================================
-        // 8. المكون الرئيسي والتطبيق (مع نظام المفتاح المنبثق)
+        // 8. المكون الرئيسي والتطبيق
         // ==========================================
         function MainApp({ user }) {
           const [entries, setEntries] = useState({});
