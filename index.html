@@ -1811,6 +1811,12 @@ ${recentContext}\n\n${criteriaPrompt}`;
             try { await db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).set({ criteria: newCriteria }, { merge: true }); } catch(e) {}
           };
 
+          if (isLoadingData || isCheckingKey) {
+            return <div className="max-w-md mx-auto h-screen bg-slate-50 flex items-center justify-center"><Loader className="text-4xl animate-spin text-blue-500" /></div>;
+          }
+
+          const showGlobalKeyModal = globalApiKey === "";
+
           return (
             <div className="w-full h-full relative flex flex-col" dir="rtl">
               
