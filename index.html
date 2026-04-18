@@ -1762,17 +1762,40 @@ ${existingTasksContext}`;
           );
         };
 
-        const EntryFormView = ({ selectedDate, setSelectedDate, entries, criteria, saveEntry, goToCalendar, goToDetails, globalApiKey, openKeyModal, plannedTasks }) => {
+        const EntryFormView = ({ selectedDate, setSelectedDate, entries, criteria, saveEntry, goToCalendar, goToDetails, globalApiKey, openKeyModal, plannedTasks, dailyTasks, saveDailyTasks }) => {
           const [transcript, setTranscript] = useState("");
           const [isRecording, setIsRecording] = useState(false);
           const [recordingTime, setRecordingTime] = useState(0);
           const [audioData, setAudioData] = useState(null);
           const [isAnalyzing, setIsAnalyzing] = useState(false);
           const [error, setError] = useState(null);
+          const [newDailyTask, setNewDailyTask] = useState("");
+          const [showDailyTasks, setShowDailyTasks] = useState(true);
           
           const mediaRecorderRef = useRef(null);
           const timerRef = useRef(null);
           const recognitionRef = useRef(null);
+
+          // مهام هذا اليوم المحددة
+          const todayDailyTasks = dailyTasks?.[selectedDate] || [];
+
+          const addDailyTask = () => {
+            if (!newDailyTask.trim()) return;
+            const task = { id: 'dt_' + Date.now(), label: newDailyTask.trim(), completed: false };
+            const updated = { ...dailyTasks, [selectedDate]: [...todayDailyTasks, task] };
+            saveDailyTasks(updated);
+            setNewDailyTask("");
+          };
+
+          const toggleDailyTask = (id) => {
+            const updated = { ...dailyTasks, [selectedDate]: todayDailyTasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t) };
+            saveDailyTasks(updated);
+          };
+
+          const removeDailyTask = (id) => {
+            const updated = { ...dailyTasks, [selectedDate]: todayDailyTasks.filter(t => t.id !== id) };
+            saveDailyTasks(updated);
+          };
 
           useEffect(() => {
             setTranscript(""); 
@@ -2038,6 +2061,59 @@ ${existingTasksContext}`;
                 <button onClick={handleAnalyze} disabled={isAnalyzing || (!transcript.trim() && !audioData)} className="bg-blue-600 text-white w-full py-5 rounded-2xl font-black text-lg flex justify-center gap-2 shadow-xl shadow-blue-500/50 disabled:opacity-50 hover:bg-blue-700 shrink-0 mt-2">
                   {isAnalyzing ? <><Loader className="text-xl animate-spin" /> <span>جاري التحليل والإضافة...</span></> : (error && globalApiKey ? <><RefreshCw className="text-lg"/> <span>إعادة المحاولة</span></> : <span>حفظ وتحليل</span>)}
                 </button>
+
+                {/* مهام اليوم */}
+                <div className="bg-white rounded-[2rem] p-5 shadow-sm border border-gray-100 shrink-0 mt-2">
+                  <button onClick={() => setShowDailyTasks(!showDailyTasks)} className="w-full flex justify-between items-center mb-1">
+                    <h3 className="text-gray-800 font-black text-sm flex items-center gap-2">
+                      <ListTodo className="text-blue-500 text-base" />
+                      مهام أريد إنجازها اليوم
+                      <span className="bg-blue-100 text-blue-600 text-xs font-black px-2 py-0.5 rounded-lg">{todayDailyTasks.length}</span>
+                    </h3>
+                    <ChevronLeft className={`text-gray-400 text-sm transition-transform ${showDailyTasks ? '-rotate-90' : ''}`} />
+                  </button>
+
+                  {showDailyTasks && (
+                    <>
+                      {todayDailyTasks.length === 0 && (
+                        <p className="text-gray-400 text-xs font-medium mt-3 mb-2">لا توجد مهام مضافة لهذا اليوم. أضف مهامك أدناه.</p>
+                      )}
+                      {todayDailyTasks.length > 0 && (
+                        <ul className="mt-3 space-y-2 mb-3">
+                          {todayDailyTasks.map(task => (
+                            <li key={task.id} className="flex items-center gap-3 bg-gray-50 p-3 rounded-2xl border border-gray-100 group">
+                              <button onClick={() => toggleDailyTask(task.id)} className={`shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition ${task.completed ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 hover:border-green-400'}`}>
+                                {task.completed && <Check className="text-[10px]" />}
+                              </button>
+                              <span className={`flex-1 text-sm font-medium ${task.completed ? 'line-through text-gray-400' : 'text-gray-700'}`}>{task.label}</span>
+                              <button onClick={() => removeDailyTask(task.id)} className="opacity-0 group-hover:opacity-100 transition p-1 text-red-400 hover:text-red-600">
+                                <X className="text-xs" />
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="flex gap-2 mt-2">
+                        <input
+                          type="text"
+                          value={newDailyTask}
+                          onChange={e => setNewDailyTask(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && addDailyTask()}
+                          placeholder="أضف مهمة لهذا اليوم..."
+                          className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 font-medium"
+                        />
+                        <button onClick={addDailyTask} className="bg-blue-600 text-white px-3 py-2 rounded-xl font-bold text-sm hover:bg-blue-700 transition">
+                          <Plus className="text-sm" />
+                        </button>
+                      </div>
+                      {todayDailyTasks.some(t => !t.completed) && (
+                        <p className="text-[10px] text-amber-600 font-bold mt-2 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100">
+                          ⚡ المهام غير المنجزة ستُرحَّل تلقائياً لليوم التالي
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
 
                 {entries?.[selectedDate]?.tasks && entries[selectedDate].tasks.length > 0 && (
                   <div className="bg-indigo-50 p-5 rounded-3xl border border-indigo-100 shadow-sm shrink-0 mt-2">
@@ -2772,7 +2848,7 @@ ${existingTasksContext}`;
           );
         };
 
-        const FinancialDetailsView = ({ entries, financialState, goToDashboard }) => {
+        const FinancialDetailsView = ({ entries, financialState, goToDashboard, updateFinancialState }) => {
            const [activeTab, setActiveTab] = useState('chart');
 
            const chartData = useMemo(() => {
@@ -2821,12 +2897,13 @@ ${existingTasksContext}`;
                    <div className="flex justify-between items-center mb-4">
                      <button onClick={goToDashboard} className="p-2 bg-white/10 rounded-full hover:bg-white/20"><ArrowRight className="text-xl" /></button>
                      <h1 className="text-xl font-extrabold flex items-center gap-2"><Activity className="text-green-400" /> التقرير المالي</h1>
-                     <div className="w-10"></div>
+                     <button onClick={() => { const c = financialState?.balance || 0; const v = prompt('تعديل الرصيد (أكثر=إيداع، أقل=سحب) - الحالي: ' + c, c); if (v !== null && !isNaN(v) && v.trim() !== '') updateFinancialState(parseFloat(v)); }} className="p-2 bg-green-500/20 hover:bg-green-500/40 rounded-full transition" title="تعديل الرصيد"><Edit className="text-lg text-green-300" /></button>
                    </div>
 
-                   <div className="text-center mt-6 mb-2">
-                      <p className="text-white/60 text-xs font-bold uppercase tracking-wider mb-1">الرصيد الكلي المعرف</p>
-                      <div className="text-5xl font-black text-white">{financialState?.balance || 0} <span className="text-lg font-bold text-white/50">رس</span></div>
+                   <div className="text-center mt-2 mb-2">
+                      <p className="text-white/60 text-xs font-bold uppercase tracking-wider mb-1">الرصيد الحالي</p>
+                      <div className="text-5xl font-black text-white">{(financialState?.balance || 0).toLocaleString('ar-SA')} <span className="text-lg font-bold text-white/50">رس</span></div>
+                      <p className="text-xs text-white/40 mt-1 font-medium">اضغط زر التعديل لتحديث الرصيد</p>
                    </div>
 
                    <div className="flex gap-2 justify-center mt-8 bg-white/10 p-1 rounded-2xl w-max mx-auto">
@@ -2958,6 +3035,8 @@ ${existingTasksContext}`;
           const [financialState, setFinancialState] = useState(null);
           const [isInitFinanceMode, setIsInitFinanceMode] = useState(false);
           const [initBalanceInput, setInitBalanceInput] = useState("");
+          // مهام اليوم اليومية
+          const [dailyTasks, setDailyTasks] = useState({});
 
           useEffect(() => {
             if (!user || !db) return;
@@ -3033,7 +3112,41 @@ ${existingTasksContext}`;
               }
             });
 
-            return () => { isMounted = false; unsubEntries(); unsubSettings(); unsubTasks(); unsubFinance(); };
+            // جلب مهام اليوم اليومية وترحيل غير المنجزة
+            const unsubDailyTasks = db.doc(`artifacts/${appIdStr}/users/${user.uid}/tasks/daily`).onSnapshot((docSnap) => {
+              if (docSnap.exists && isMounted) {
+                const loaded = docSnap.data().tasks || {};
+                // ترحيل المهام غير المنجزة من الأيام الماضية للأمس إلى اليوم
+                const todayStr = new Date().toISOString().split('T')[0];
+                let needsUpdate = false;
+                const updated = { ...loaded };
+                Object.keys(updated).forEach(dateKey => {
+                  if (dateKey < todayStr) {
+                    const incompleteTasks = (updated[dateKey] || []).filter(t => !t.completed);
+                    if (incompleteTasks.length > 0) {
+                      // Move all past incomplete tasks directly to today
+                      const existing = new Set((updated[todayStr] || []).map(t => t.label));
+                      const toCarry = incompleteTasks.filter(t => !existing.has(t.label)).map(t => ({ ...t, id: 'dt_' + Date.now() + Math.random(), completed: false }));
+                      
+                      if (toCarry.length > 0) {
+                        updated[todayStr] = [...(updated[todayStr] || []), ...toCarry];
+                        needsUpdate = true;
+                      }
+                      
+                      // Remove incomplete tasks from the past day after carrying them over
+                      updated[dateKey] = (updated[dateKey] || []).filter(t => t.completed);
+                      needsUpdate = true;
+                    }
+                  }
+                });
+                setDailyTasks(updated);
+                if (needsUpdate) {
+                  db.doc(`artifacts/${appIdStr}/users/${user.uid}/tasks/daily`).set({ tasks: updated }, { merge: true }).catch(()=>{});
+                }
+              }
+            });
+
+            return () => { isMounted = false; unsubEntries(); unsubSettings(); unsubTasks(); unsubFinance(); unsubDailyTasks(); };
           }, [user]);
 
           const saveDashboardInsightsData = async (filterKey, insightsData, chatHistory, dateString) => {
@@ -3126,7 +3239,8 @@ ${existingTasksContext}`;
                       const newBalance = (parseFloat(financialState.balance) || 0) + diff;
                       const newFinState = { ...financialState, balance: newBalance };
                       setFinancialState(newFinState);
-                      db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/finance`).set(newFinState, { merge: true }).catch(()=>{});
+                      // FIX: save to correct path finance/state
+                      db.doc(`artifacts/${appIdStr}/users/${user.uid}/finance/state`).set(newFinState, { merge: true }).catch(()=>{});
                   }
             }
 
@@ -3154,6 +3268,42 @@ ${existingTasksContext}`;
           const saveCriteriaData = async (newCriteria) => {
             setCriteria(newCriteria);
             try { await db.doc(`artifacts/${appIdStr}/users/${user.uid}/settings/userSettings`).set({ criteria: newCriteria }, { merge: true }); } catch(e) {}
+          };
+
+          const saveDailyTasksData = async (newDailyTasks) => {
+            setDailyTasks(newDailyTasks);
+            try { await db.doc(`artifacts/${appIdStr}/users/${user.uid}/tasks/daily`).set({ tasks: newDailyTasks }, { merge: true }); } catch(e) {}
+          };
+
+          const updateFinancialStateBalance = async (newBalance) => {
+            const oldBalance = parseFloat(financialState?.balance) || 0;
+            const diff = newBalance - oldBalance;
+            if (diff === 0) return;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const newFinState = { ...financialState, balance: newBalance, lastEditDate: todayStr, lastEditDiff: diff };
+            setFinancialState(newFinState);
+
+            try { 
+              await db.doc(`artifacts/${appIdStr}/users/${user.uid}/finance/state`).set(newFinState, { merge: true }); 
+              
+              // Record the difference in today's entry
+              const todayEntry = entries[todayStr] || { finance: { income: 0, expenses: [] } };
+              let newFinance = { ...(todayEntry.finance || { income: 0, expenses: [] }) };
+              
+              if (diff > 0) {
+                 newFinance.income = (parseFloat(newFinance.income) || 0) + diff;
+              } else {
+                 newFinance.expenses = [
+                    ...(newFinance.expenses || []), 
+                    { name: "تسوية يدوية للرصيد", cost: Math.abs(diff), isEstimate: false }
+                 ];
+              }
+              
+              const updatedEntryData = { ...todayEntry, finance: newFinance, timestamp: Date.now() };
+              setEntries(prev => ({ ...prev, [todayStr]: updatedEntryData }));
+              await db.doc(`artifacts/${appIdStr}/users/${user.uid}/entries/${todayStr}`).set(updatedEntryData, { merge: true });
+            } catch(e) { console.error("Error updating balance and entry", e); }
           };
 
           if (isLoadingData || isCheckingKey) {
@@ -3237,10 +3387,10 @@ ${existingTasksContext}`;
               {currentView === 'settings' && <SettingsView criteria={criteria} saveCriteria={saveCriteriaData} goToDashboard={() => setCurrentView('dashboard')} />}
               {currentView === 'calendar' && <CalendarView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} goToDashboard={() => setCurrentView('dashboard')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} />}
               {currentView === 'year' && <YearView entries={entries} criteria={criteria} monthlyTitles={monthlyTitles} currentYear={currentYear} setCurrentYear={setCurrentYear} goToDashboard={() => setCurrentView('dashboard')} setCurrentMonth={setCurrentMonth} setCurrentView={setCurrentView} />}
-              {currentView === 'form' && <EntryFormView selectedDate={selectedDate} setSelectedDate={setSelectedDate} entries={entries} criteria={criteria} saveEntry={saveEntryData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} plannedTasks={plannedTasks} />}
+              {currentView === 'form' && <EntryFormView selectedDate={selectedDate} setSelectedDate={setSelectedDate} entries={entries} criteria={criteria} saveEntry={saveEntryData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToCalendar={() => setCurrentView('calendar')} goToDetails={(d) => {setSelectedDate(d); setCurrentView('details');}} plannedTasks={plannedTasks} dailyTasks={dailyTasks} saveDailyTasks={saveDailyTasksData} />}
               {currentView === 'details' && <EntryDetailsView selectedDate={selectedDate} entries={entries} criteria={criteria} updateEntryData={updateEntryData} deleteEntry={deleteEntryData} saveCriteria={saveCriteriaData} globalApiKey={globalApiKey} openKeyModal={() => setShowKeyModal(true)} goToSettings={() => setCurrentView('settings')} goToDashboard={() => setCurrentView('dashboard')} goToCalendar={() => setCurrentView('calendar')} goToForm={(d) => {setSelectedDate(d); setCurrentView('form');}} />}
               {currentView === 'plannedTasks' && <PlannedTasksView tasks={plannedTasks} globalApiKey={globalApiKey} updateTasks={async (tasks) => { setPlannedTasks(tasks); try { await db.doc(`artifacts/${appIdStr}/users/${user.uid}/tasks/planned`).set({tasks}); } catch(e){} }} goToDashboard={() => setCurrentView('dashboard')} />}
-              {currentView === 'financialDetails' && <FinancialDetailsView entries={entries} financialState={financialState} goToDashboard={() => setCurrentView('dashboard')} />}
+              {currentView === 'financialDetails' && <FinancialDetailsView entries={entries} financialState={financialState} goToDashboard={() => setCurrentView('dashboard')} updateFinancialState={updateFinancialStateBalance} />}
 
               {currentView === 'dashboard' && (
                 <div className="fixed bottom-8 left-0 right-0 flex justify-center pointer-events-none z-[100]">
